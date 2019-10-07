@@ -1,13 +1,24 @@
 use std::io::{Read, Write};
 
 struct Coordinates {
-    x: u32,
-    y: u32,
+    pub x: u32,
+    pub y: u32,
 }
 
 struct Player {
     position: Coordinates,
     speed: f64,
+}
+
+impl Player {
+    fn new(x: u32, y: u32) -> Self {
+        let position = Coordinates { x, y }
+        
+        Self {
+            position,
+            speed:  1.0,
+        }
+    }
 }
 
 trait Enemy {
@@ -19,13 +30,47 @@ struct MotionlessEnemy {
     speed: f64,
 }
 
-struct Wall {
-    position: Coordinates,
+impl MotionlessEnemy {
+    fn new(x: u32, y: u32) -> Self {
+        let position = Coordinates { x, y }
+        
+        Self {
+            position,
+            speed:  0.0,
+        }
+    }
 }
 
-struct BreakableWall {
+struct SlowEnemy {
     position: Coordinates,
-    broken: bool,
+    speed: f64,
+}
+
+impl SlowEnemy {
+    fn new(x: u32, y: u32) -> Self {
+        let position = Coordinates { x, y }
+        
+        Self {
+            position,
+            speed:  0.25,
+        }
+    }
+}
+
+struct Wall {
+    position: Coordinates,
+    breakable: bool
+}
+
+impl Wall {
+    fn new(x: u32, y: u32, breakable: bool) -> Self {
+        let position = Coordinates { x, y }
+        
+        Self {
+            position,
+            breakable,
+        }
+    }
 }
 
 struct Stair {
@@ -35,6 +80,7 @@ struct Stair {
 struct Maze {
     players: Vec<Player>,
     enemies: Vec<Box<dyn Enemy>>,
+    walls: Vec<Wall>,
     width: u32,
     map: &'static [u8],
 } 
