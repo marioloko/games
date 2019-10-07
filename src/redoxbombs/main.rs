@@ -11,7 +11,7 @@ struct Player {
 }
 
 trait Enemy {
-    fn move(&mut self);
+    fn r#move(&mut self);
 }
 
 struct MotionlessEnemy {
@@ -34,7 +34,7 @@ struct Stair {
 
 struct Maze {
     players: Vec<Player>,
-    enemies: Vec<dyn Enemy>,
+    enemies: Vec<Box<dyn Enemy>>,
     width: u32,
     map: &'static [u8],
 } 
