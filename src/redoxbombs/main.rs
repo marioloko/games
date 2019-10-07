@@ -1,4 +1,8 @@
-use std::io::{Read, Write};
+//use std::io::{Read, Write};
+mod maze;
+use maze::Maze;
+
+const MAP_1: &'static [u8] = include_bytes!("map1.txt");
 
 struct Coordinates {
     pub x: u32,
@@ -12,7 +16,7 @@ struct Player {
 
 impl Player {
     fn new(x: u32, y: u32) -> Self {
-        let position = Coordinates { x, y }
+        let position = Coordinates { x, y };
         
         Self {
             position,
@@ -32,7 +36,7 @@ struct MotionlessEnemy {
 
 impl MotionlessEnemy {
     fn new(x: u32, y: u32) -> Self {
-        let position = Coordinates { x, y }
+        let position = Coordinates { x, y };
         
         Self {
             position,
@@ -48,7 +52,7 @@ struct SlowEnemy {
 
 impl SlowEnemy {
     fn new(x: u32, y: u32) -> Self {
-        let position = Coordinates { x, y }
+        let position = Coordinates { x, y };
         
         Self {
             position,
@@ -57,40 +61,19 @@ impl SlowEnemy {
     }
 }
 
-struct Wall {
-    position: Coordinates,
-    breakable: bool
-}
 
-impl Wall {
-    fn new(x: u32, y: u32, breakable: bool) -> Self {
-        let position = Coordinates { x, y }
-        
-        Self {
-            position,
-            breakable,
-        }
-    }
-}
 
 struct Stair {
     position: Coordinates,
 }
 
-struct Maze {
-    players: Vec<Player>,
-    enemies: Vec<Box<dyn Enemy>>,
-    walls: Vec<Wall>,
-    width: u32,
-    map: &'static [u8],
-} 
 
-struct Game<R: Read, W: Write> {
-    stdin: R,
-    stdout: W,
-    level: u8,
-}
+//struct Game<R: Read, W: Write> {
+//    stdin: R,
+//    stdout: W,
+//    level: u8,
+//}
 
 fn main() {
-    println!("Hello world in games!");
+    println!("{:?}", Maze::from(MAP_1));
 }
