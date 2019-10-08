@@ -57,7 +57,7 @@ impl fmt::Display for Maze {
                 write!(f, "\n");
             }
 
-            write!(f, "{}", tile);
+            write!(f, "{}", tile)?;
         }
 
         write!(f, "")
