@@ -75,5 +75,5 @@ struct Stair {
 //}
 
 fn main() {
-    println!("{:?}", Maze::from(MAP_1));
+    println!("{}", Maze::from(MAP_1));
 }

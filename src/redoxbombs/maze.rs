@@ -1,13 +1,21 @@
 use std::fmt;
 
 #[derive(Debug)]
-struct Wall {
-    breakable: bool
+enum Tile {
+    Empty,
+    Wall,
+    BreakableWall,
 }
 
-impl Wall {
-    fn new(breakable: bool) -> Self {
-        Self { breakable }
+impl fmt::Display for Tile {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let render_char = match self {
+            Tile::Empty => ' ',
+            Tile::Wall  => '#',
+            Tile::BreakableWall => '=',
+        };
+
+        write!(f, "{}", render_char)
     }
 }
 
@@ -15,9 +23,8 @@ impl Wall {
 pub struct Maze {
 //    players: Vec<Player>,
 //    enemies: Vec<Box<dyn Enemy>>,
-    tiles: Vec<Option<Wall>>,
+    tiles: Vec<Tile>,
     width: usize,
-//    map: &'static [u8],
 } 
 
 impl From<&[u8]> for Maze {
@@ -29,15 +36,30 @@ impl From<&[u8]> for Maze {
         for &tile in map {
             match tile {
                 b'\n' => (),
-                b'#'  => tiles.push(Some(Wall::new(false))),
-                b'='  => tiles.push(Some(Wall::new(true))), 
-                _ => tiles.push(None),
+                b'#'  => tiles.push(Tile::Wall),
+                b'='  => tiles.push(Tile::BreakableWall), 
+                _ => tiles.push(Tile::Empty),
             }
         }
 
         Self {
             tiles,
             width,
-        }        
+        }
+    }
+}
+
+impl fmt::Display for Maze {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+
+        for (idx, tile) in self.tiles.iter().enumerate() {
+            if idx % self.width == 0  && idx != 0 {
+                write!(f, "\n");
+            }
+
+            write!(f, "{}", tile);
+        }
+
+        write!(f, "")
     }
 }
