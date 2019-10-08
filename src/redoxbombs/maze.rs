@@ -21,8 +21,6 @@ impl fmt::Display for Tile {
 
 #[derive(Debug)]
 pub struct Maze {
-//    players: Vec<Player>,
-//    enemies: Vec<Box<dyn Enemy>>,
     tiles: Vec<Tile>,
     width: usize,
 } 
