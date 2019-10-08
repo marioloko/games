@@ -54,7 +54,7 @@ impl fmt::Display for Maze {
 
         for (idx, tile) in self.tiles.iter().enumerate() {
             if idx % self.width == 0  && idx != 0 {
-                write!(f, "\n");
+                write!(f, "\n")?;
             }
 
             write!(f, "{}", tile)?;
