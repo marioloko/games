@@ -1,86 +1,11 @@
 //use std::io::{Read, Write};
-use std::fmt;
 mod maze;
+mod game_element;
+
 use maze::Maze;
+use game_element::{GameElement, Player, Enemy, SlowEnemy, MotionlessEnemy};
 
 const MAP_1: &'static [u8] = include_bytes!("map1.txt");
-
-#[derive(Debug)]
-struct Coordinates {
-    pub x: usize,
-    pub y: usize,
-}
-
-#[derive(Debug)]
-struct Player {
-    position: Coordinates,
-    speed: f64,
-}
-
-impl Player {
-    fn new(x: usize, y: usize) -> Self {
-        let position = Coordinates { x, y };
-        
-        Self {
-            position,
-            speed:  1.0,
-        }
-    }
-}
-
-trait Enemy: fmt::Debug {
-    fn r#move(&mut self);
-}
-
-#[derive(Debug)]
-struct MotionlessEnemy {
-    position: Coordinates,
-    speed: f64,
-}
-
-impl MotionlessEnemy {
-    fn new(x: usize, y: usize) -> Self {
-        let position = Coordinates { x, y };
-        
-        Self {
-            position,
-            speed:  0.0,
-        }
-    }
-}
-
-impl Enemy for MotionlessEnemy {
-    fn r#move(&mut self) {
-    }
-}
-
-#[derive(Debug)]
-struct SlowEnemy {
-    position: Coordinates,
-    speed: f64,
-}
-
-impl SlowEnemy {
-    fn new(x: usize, y: usize) -> Self {
-        let position = Coordinates { x, y };
-        
-        Self {
-            position,
-            speed:  0.25,
-        }
-    }
-}
-
-impl Enemy for SlowEnemy {
-    fn r#move(&mut self) {
-    }
-}
-
-
-struct Stair {
-    position: Coordinates,
-}
-
 
 struct Game {
 //    stdin: R,

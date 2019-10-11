@@ -1,0 +1,5 @@
+Player 1 1
+SlowMonster 19 1
+SlowMonster 10 7
+MotionlessMonster 1 7
+MotionlessMonster 2 7
