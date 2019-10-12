@@ -6,23 +6,23 @@ struct Coordinates {
     pub y: usize,
 }
 
-pub trait GameElement {
+pub trait GameElement: FromStr {
     fn get_position(&self) -> &Coordinates;
 }
 
 #[derive(Debug)]
 pub struct Player {
     position: Coordinates,
-    speed: f64,
 }
 
 impl Player {
+    const SPEED = 1.0;
+
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
         
         Self {
             position,
-            speed:  1.0,
         }
     }
 }
@@ -40,16 +40,16 @@ pub trait Enemy: fmt::Debug + GameElement  {
 #[derive(Debug)]
 pub struct MotionlessEnemy {
     position: Coordinates,
-    speed: f64,
 }
 
 impl MotionlessEnemy {
+    const SPEED = 0.0;
+
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
         
         Self {
             position,
-            speed:  0.0,
         }
     }
 }
@@ -69,16 +69,16 @@ impl Enemy for MotionlessEnemy {
 #[derive(Debug)]
 pub struct SlowEnemy {
     position: Coordinates,
-    speed: f64,
 }
 
 impl SlowEnemy {
+    const SPEED = 0.25;
+
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
         
         Self {
             position,
-            speed:  0.25,
         }
     }
 }
