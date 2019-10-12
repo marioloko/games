@@ -1,6 +1,9 @@
 use std::collections::VecDeque;
 use std::fmt;
 
+pub type GameElementObject = Box<dyn GameElement>;
+pub type GameElementObjects = VecDeque<GameElementObject>;
+
 #[derive(Debug)]
 struct Coordinates {
     pub x: usize,
@@ -19,7 +22,7 @@ pub trait GameElement: fmt::Debug {
 
     fn get_type(&self) -> GameElementType;
 
-    fn take_turn(self, elems: &mut VecDeque<Box<dyn GameElement>>) -> Option<Box<dyn GameElement>>;
+    fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject>;
 }
 
 #[derive(Debug)]
@@ -48,7 +51,7 @@ impl GameElement for Player {
         Self::TYPE
     }
 
-    fn take_turn(self, elems: &mut VecDeque<Box<dyn GameElement>>) -> Option<Box<dyn GameElement>> {
+    fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
         None
     }
 }
@@ -79,7 +82,7 @@ impl GameElement for MotionlessEnemy {
         Self::TYPE
     }
 
-    fn take_turn(self, elems: &mut VecDeque<Box<dyn GameElement>>) -> Option<Box<dyn GameElement>> {
+    fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
         None
     }
 }
@@ -110,7 +113,7 @@ impl GameElement for SlowEnemy {
         Self::TYPE
     }
 
-    fn take_turn(self, elems: &mut VecDeque<Box<dyn GameElement>>) -> Option<Box<dyn GameElement>> {
+    fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
         None
     }
 }
@@ -140,7 +143,7 @@ impl GameElement for Stairs {
         Self::TYPE
     }
 
-    fn take_turn(self, elems: &mut VecDeque<Box<dyn GameElement>>) -> Option<Box<dyn GameElement>> {
+    fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
         None
     }
 }
