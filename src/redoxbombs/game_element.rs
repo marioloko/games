@@ -1,5 +1,5 @@
-use std::fmt;
 use std::collections::VecDeque;
+use std::fmt;
 
 #[derive(Debug)]
 struct Coordinates {
@@ -11,7 +11,7 @@ struct Coordinates {
 enum GameElementType {
     Player,
     Enemy,
-    Stairs,   
+    Stairs,
 }
 
 pub trait GameElement: fmt::Debug {
@@ -35,9 +35,7 @@ impl Player {
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
 
-        Self {
-            position,
-        }
+        Self { position }
     }
 }
 
@@ -67,10 +65,8 @@ impl MotionlessEnemy {
 
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
-        
-        Self {
-            position,
-        }
+
+        Self { position }
     }
 }
 
@@ -88,7 +84,6 @@ impl GameElement for MotionlessEnemy {
     }
 }
 
-
 #[derive(Debug)]
 pub struct SlowEnemy {
     position: Coordinates,
@@ -101,10 +96,8 @@ impl SlowEnemy {
 
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
-        
-        Self {
-            position,
-        }
+
+        Self { position }
     }
 }
 
@@ -134,9 +127,7 @@ impl Stairs {
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
 
-        Self {
-            position,
-        }
+        Self { position }
     }
 }
 

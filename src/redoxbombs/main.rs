@@ -1,17 +1,17 @@
 //use std::io::{Read, Write};
-mod maze;
 mod game_element;
+mod maze;
 
-use std::collections::VecDeque;
+use game_element::{GameElement, MotionlessEnemy, Player, SlowEnemy, Stairs};
 use maze::Maze;
-use game_element::{GameElement, Player, SlowEnemy, MotionlessEnemy, Stairs};
+use std::collections::VecDeque;
 
 const MAP_1: &'static [u8] = include_bytes!("map1.txt");
 const GAME_ELEMENTS_1: &'static str = include_str!("game_elements1.txt");
 
 struct Game {
-//    stdin: R,
-//    stdout: W,
+    //    stdin: R,
+    //    stdout: W,
     maze: Maze,
     players: Player,
     game_elements: Vec<Box<dyn GameElement>>,
@@ -32,8 +32,8 @@ impl Game {
 
             let game_element: Box<dyn GameElement> = match name {
                 Player::NAME => Box::new(Player::new(x, y)),
-                MotionlessEnemy::NAME => Box::new(MotionlessEnemy::new(x, y)),    
-                SlowEnemy::NAME => Box::new(SlowEnemy::new(x, y)),    
+                MotionlessEnemy::NAME => Box::new(MotionlessEnemy::new(x, y)),
+                SlowEnemy::NAME => Box::new(SlowEnemy::new(x, y)),
                 Stairs::NAME => Box::new(Stairs::new(x, y)),
                 _ => panic!("Unrecognized game element: {}", name),
             };
