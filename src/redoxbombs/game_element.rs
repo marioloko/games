@@ -6,8 +6,17 @@ struct Coordinates {
     pub y: usize,
 }
 
-pub trait GameElement: FromStr {
+#[derive(Debug)]
+enum GameElementType {
+    Player,
+    Enemy,
+    Stairs,   
+}
+
+pub trait GameElement {
     fn get_position(&self) -> &Coordinates;
+
+    fn get_type(&self) -> GameElementType;
 }
 
 #[derive(Debug)]
@@ -16,7 +25,8 @@ pub struct Player {
 }
 
 impl Player {
-    const SPEED = 1.0;
+    const TYPE: GameElementType  = GameElementType::Player;
+    const SPEED: f64 = 1.0;
 
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
@@ -31,6 +41,10 @@ impl GameElement for Player {
     fn get_position(&self) -> &Coordinates {
         &self.position
     }
+
+    fn get_type(&self) -> GameElementType {
+        Self::TYPE
+    }
 }
 
 pub trait Enemy: fmt::Debug + GameElement  {
@@ -43,7 +57,8 @@ pub struct MotionlessEnemy {
 }
 
 impl MotionlessEnemy {
-    const SPEED = 0.0;
+    const TYPE: GameElementType = GameElementType::Enemy;
+    const SPEED: f64 = 0.0;
 
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
@@ -57,6 +72,10 @@ impl MotionlessEnemy {
 impl GameElement for MotionlessEnemy {
     fn get_position(&self) -> &Coordinates {
         &self.position
+    }
+
+    fn get_type(&self) -> GameElementType {
+        Self::TYPE
     }
 }
 
@@ -72,7 +91,8 @@ pub struct SlowEnemy {
 }
 
 impl SlowEnemy {
-    const SPEED = 0.25;
+    const TYPE: GameElementType = GameElementType::Enemy;
+    const SPEED: f64 = 0.25;
 
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
@@ -87,6 +107,10 @@ impl GameElement for SlowEnemy {
     fn get_position(&self) -> &Coordinates {
         &self.position
     }
+
+    fn get_type(&self) -> GameElementType {
+        Self::TYPE
+    }
 }
 
 impl Enemy for SlowEnemy {
@@ -95,12 +119,20 @@ impl Enemy for SlowEnemy {
 }
 
 
-struct Stair {
+struct Stairs {
     position: Coordinates,
 }
 
-impl GameElement for Stair {
+impl Stairs {
+    const TYPE: GameElementType = GameElementType::Stairs;
+}
+
+impl GameElement for Stairs {
     fn get_position(&self) -> &Coordinates {
         &self.position
+    }
+
+    fn get_type(&self) -> GameElementType {
+        Self::TYPE
     }
 }
