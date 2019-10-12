@@ -2,45 +2,50 @@
 mod maze;
 mod game_element;
 
+use std::collections::VecDeque;
 use maze::Maze;
-use game_element::{GameElement, Player, Enemy, SlowEnemy, MotionlessEnemy};
+use game_element::{GameElement, Player, SlowEnemy, MotionlessEnemy, Stairs};
 
 const MAP_1: &'static [u8] = include_bytes!("map1.txt");
+const GAME_ELEMENTS_1: &'static str = include_str!("game_elements1.txt");
 
 struct Game {
 //    stdin: R,
 //    stdout: W,
     maze: Maze,
-    players: Vec<Player>,
-    enemies: Vec<Box<dyn Enemy>>,
+    players: Player,
+    game_elements: Vec<Box<dyn GameElement>>,
     level: u8,
 }
 
 impl Game {
-    fn load_characters(map: &[u8]) {
-        let width = map.iter().take_while(|&b| *b != b'\n').count();
+    fn load_game_elements(game_elements: &str) -> VecDeque<Box<dyn GameElement>> {
+        let game_elements = game_elements.lines();
 
-        let flat_map: Vec<&u8> = map.iter().filter(|&b| *b != b'\n').collect();
+        let mut result: VecDeque<Box<dyn GameElement>> = VecDeque::new();
+        for game_element in game_elements {
+            let game_element: Vec<&str> = game_element.split(' ').collect();
+            let (name, x, y) = (game_element[0], game_element[1], game_element[2]);
 
-        let mut players = Vec::new();
-        let mut enemies: Vec<Box<dyn Enemy>> = Vec::new();
+            let x: usize = x.parse().unwrap();
+            let y: usize = y.parse().unwrap();
 
-        for (idx, &elem) in flat_map.iter().enumerate() {
-            let x = idx % width;
-            let y = idx / width;
-            match *elem {
-                b'@' => players.push(Player::new(x, y)),
-                b'M' => enemies.push(Box::new(MotionlessEnemy::new(x, y))),
-                b'S' => enemies.push(Box::new(SlowEnemy::new(x, y))),
-                _ => (),
-            }
+            let game_element: Box<dyn GameElement> = match name {
+                Player::NAME => Box::new(Player::new(x, y)),
+                MotionlessEnemy::NAME => Box::new(MotionlessEnemy::new(x, y)),    
+                SlowEnemy::NAME => Box::new(SlowEnemy::new(x, y)),    
+                Stairs::NAME => Box::new(Stairs::new(x, y)),
+                _ => panic!("Unrecognized game element: {}", name),
+            };
+
+            result.push_back(game_element);
         }
-        println!("{:?}", players);
-        println!("{:?}", enemies);
+
+        result
     }
 }
 
 fn main() {
     println!("{}", Maze::from(MAP_1));
-    Game::load_characters(MAP_1);
+    println!("{:?}", Game::load_game_elements(GAME_ELEMENTS_1));
 }

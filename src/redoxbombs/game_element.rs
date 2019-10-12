@@ -1,4 +1,5 @@
 use std::fmt;
+use std::collections::VecDeque;
 
 #[derive(Debug)]
 struct Coordinates {
@@ -13,10 +14,12 @@ enum GameElementType {
     Stairs,   
 }
 
-pub trait GameElement {
+pub trait GameElement: fmt::Debug {
     fn get_position(&self) -> &Coordinates;
 
     fn get_type(&self) -> GameElementType;
+
+    fn take_turn(self, elems: &mut VecDeque<Box<dyn GameElement>>) -> Option<Box<dyn GameElement>>;
 }
 
 #[derive(Debug)]
@@ -25,12 +28,13 @@ pub struct Player {
 }
 
 impl Player {
-    const TYPE: GameElementType  = GameElementType::Player;
+    pub const NAME: &'static str = "Player";
+    const TYPE: GameElementType = GameElementType::Player;
     const SPEED: f64 = 1.0;
 
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
-        
+
         Self {
             position,
         }
@@ -45,10 +49,10 @@ impl GameElement for Player {
     fn get_type(&self) -> GameElementType {
         Self::TYPE
     }
-}
 
-pub trait Enemy: fmt::Debug + GameElement  {
-    fn r#move(&mut self);
+    fn take_turn(self, elems: &mut VecDeque<Box<dyn GameElement>>) -> Option<Box<dyn GameElement>> {
+        None
+    }
 }
 
 #[derive(Debug)]
@@ -57,6 +61,7 @@ pub struct MotionlessEnemy {
 }
 
 impl MotionlessEnemy {
+    pub const NAME: &'static str = "MotionlessEnemy";
     const TYPE: GameElementType = GameElementType::Enemy;
     const SPEED: f64 = 0.0;
 
@@ -77,10 +82,9 @@ impl GameElement for MotionlessEnemy {
     fn get_type(&self) -> GameElementType {
         Self::TYPE
     }
-}
 
-impl Enemy for MotionlessEnemy {
-    fn r#move(&mut self) {
+    fn take_turn(self, elems: &mut VecDeque<Box<dyn GameElement>>) -> Option<Box<dyn GameElement>> {
+        None
     }
 }
 
@@ -91,6 +95,7 @@ pub struct SlowEnemy {
 }
 
 impl SlowEnemy {
+    pub const NAME: &'static str = "SlowEnemy";
     const TYPE: GameElementType = GameElementType::Enemy;
     const SPEED: f64 = 0.25;
 
@@ -111,20 +116,28 @@ impl GameElement for SlowEnemy {
     fn get_type(&self) -> GameElementType {
         Self::TYPE
     }
-}
 
-impl Enemy for SlowEnemy {
-    fn r#move(&mut self) {
+    fn take_turn(self, elems: &mut VecDeque<Box<dyn GameElement>>) -> Option<Box<dyn GameElement>> {
+        None
     }
 }
 
-
-struct Stairs {
+#[derive(Debug)]
+pub struct Stairs {
     position: Coordinates,
 }
 
 impl Stairs {
+    pub const NAME: &'static str = "Stairs";
     const TYPE: GameElementType = GameElementType::Stairs;
+
+    pub fn new(x: usize, y: usize) -> Self {
+        let position = Coordinates { x, y };
+
+        Self {
+            position,
+        }
+    }
 }
 
 impl GameElement for Stairs {
@@ -134,5 +147,9 @@ impl GameElement for Stairs {
 
     fn get_type(&self) -> GameElementType {
         Self::TYPE
+    }
+
+    fn take_turn(self, elems: &mut VecDeque<Box<dyn GameElement>>) -> Option<Box<dyn GameElement>> {
+        None
     }
 }
