@@ -4,8 +4,8 @@ use std::fmt;
 pub type GameElementObject = Box<dyn GameElement>;
 pub type GameElementObjects = VecDeque<GameElementObject>;
 
-#[derive(Debug)]
-struct Coordinates {
+#[derive(Clone, Copy, Debug)]
+pub struct Coordinates {
     pub x: usize,
     pub y: usize,
 }
@@ -21,6 +21,8 @@ pub trait GameElement: fmt::Debug {
     fn get_position(&self) -> &Coordinates;
 
     fn get_type(&self) -> GameElementType;
+
+    fn get_representation(&self) -> char;
 
     fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject>;
 }
@@ -44,6 +46,7 @@ impl Player {
     const NAME: &'static str = "Player";
     const TYPE: GameElementType = GameElementType::Player;
     const SPEED: f64 = 1.0;
+    const REPRESENTATION: char = '@';
 
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
@@ -61,6 +64,10 @@ impl GameElement for Player {
         Self::TYPE
     }
 
+    fn get_representation(&self) -> char {
+        Self::REPRESENTATION
+    }
+
     fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
         None
     }
@@ -75,6 +82,7 @@ impl MotionlessEnemy {
     const NAME: &'static str = "MotionlessEnemy";
     const TYPE: GameElementType = GameElementType::Enemy;
     const SPEED: f64 = 0.0;
+    const REPRESENTATION: char = 'M';
 
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
@@ -92,6 +100,10 @@ impl GameElement for MotionlessEnemy {
         Self::TYPE
     }
 
+    fn get_representation(&self) -> char {
+        Self::REPRESENTATION
+    }
+
     fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
         None
     }
@@ -106,6 +118,7 @@ impl SlowEnemy {
     const NAME: &'static str = "SlowEnemy";
     const TYPE: GameElementType = GameElementType::Enemy;
     const SPEED: f64 = 0.25;
+    const REPRESENTATION: char = 'S';
 
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
@@ -123,6 +136,10 @@ impl GameElement for SlowEnemy {
         Self::TYPE
     }
 
+    fn get_representation(&self) -> char {
+        Self::REPRESENTATION
+    }
+
     fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
         None
     }
@@ -136,6 +153,7 @@ struct Stairs {
 impl Stairs {
     const NAME: &'static str = "Stairs";
     const TYPE: GameElementType = GameElementType::Stairs;
+    const REPRESENTATION: char = '%';
 
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
@@ -151,6 +169,10 @@ impl GameElement for Stairs {
 
     fn get_type(&self) -> GameElementType {
         Self::TYPE
+    }
+
+    fn get_representation(&self) -> char {
+        Self::REPRESENTATION
     }
 
     fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
