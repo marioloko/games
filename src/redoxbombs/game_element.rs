@@ -25,13 +25,23 @@ pub trait GameElement: fmt::Debug {
     fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject>;
 }
 
+pub fn generate_game_element(name: &str, x: usize, y: usize) -> GameElementObject {
+    match name {
+        Player::NAME => Box::new(Player::new(x, y)),
+        MotionlessEnemy::NAME => Box::new(MotionlessEnemy::new(x, y)),
+        SlowEnemy::NAME => Box::new(SlowEnemy::new(x, y)),
+        Stairs::NAME => Box::new(Stairs::new(x, y)),
+        _ => panic!("Unrecognized game element: {}", name),
+    }
+}
+
 #[derive(Debug)]
-pub struct Player {
+struct Player {
     position: Coordinates,
 }
 
 impl Player {
-    pub const NAME: &'static str = "Player";
+    const NAME: &'static str = "Player";
     const TYPE: GameElementType = GameElementType::Player;
     const SPEED: f64 = 1.0;
 
@@ -57,12 +67,12 @@ impl GameElement for Player {
 }
 
 #[derive(Debug)]
-pub struct MotionlessEnemy {
+struct MotionlessEnemy {
     position: Coordinates,
 }
 
 impl MotionlessEnemy {
-    pub const NAME: &'static str = "MotionlessEnemy";
+    const NAME: &'static str = "MotionlessEnemy";
     const TYPE: GameElementType = GameElementType::Enemy;
     const SPEED: f64 = 0.0;
 
@@ -88,12 +98,12 @@ impl GameElement for MotionlessEnemy {
 }
 
 #[derive(Debug)]
-pub struct SlowEnemy {
+struct SlowEnemy {
     position: Coordinates,
 }
 
 impl SlowEnemy {
-    pub const NAME: &'static str = "SlowEnemy";
+    const NAME: &'static str = "SlowEnemy";
     const TYPE: GameElementType = GameElementType::Enemy;
     const SPEED: f64 = 0.25;
 
@@ -119,12 +129,12 @@ impl GameElement for SlowEnemy {
 }
 
 #[derive(Debug)]
-pub struct Stairs {
+struct Stairs {
     position: Coordinates,
 }
 
 impl Stairs {
-    pub const NAME: &'static str = "Stairs";
+    const NAME: &'static str = "Stairs";
     const TYPE: GameElementType = GameElementType::Stairs;
 
     pub fn new(x: usize, y: usize) -> Self {

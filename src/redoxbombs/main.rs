@@ -2,9 +2,7 @@
 mod game_element;
 mod maze;
 
-use game_element::{
-    GameElementObject, GameElementObjects, MotionlessEnemy, Player, SlowEnemy, Stairs,
-};
+use game_element::{GameElementObject, GameElementObjects};
 use maze::Maze;
 use std::collections::VecDeque;
 
@@ -33,28 +31,15 @@ impl Game {
     }
 
     fn load_game_elements(game_elements: &str) -> GameElementObjects {
-        let game_elements = game_elements.lines();
+        game_elements.lines().map(|line| {
+            let mut it = line.split(' ');
 
-        let mut result: GameElementObjects = VecDeque::new();
-        for game_element in game_elements {
-            let game_element: Vec<&str> = game_element.split(' ').collect();
-            let (name, x, y) = (game_element[0], game_element[1], game_element[2]);
+            let name = it.next().unwrap();
+            let x = it.next().unwrap().parse().unwrap();
+            let y = it.next().unwrap().parse().unwrap();
 
-            let x: usize = x.parse().unwrap();
-            let y: usize = y.parse().unwrap();
-
-            let game_element: GameElementObject = match name {
-                Player::NAME => Box::new(Player::new(x, y)),
-                MotionlessEnemy::NAME => Box::new(MotionlessEnemy::new(x, y)),
-                SlowEnemy::NAME => Box::new(SlowEnemy::new(x, y)),
-                Stairs::NAME => Box::new(Stairs::new(x, y)),
-                _ => panic!("Unrecognized game element: {}", name),
-            };
-
-            result.push_back(game_element);
-        }
-
-        result
+            game_element::generate_game_element(name, x, y)
+        }).collect()
     }
 }
 
