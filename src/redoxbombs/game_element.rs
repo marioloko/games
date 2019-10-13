@@ -1,3 +1,6 @@
+extern crate termion;
+
+use game_element::termion::raw::IntoRawMode;
 use std::collections::VecDeque;
 use std::fmt;
 use std::io::{self, Read};
@@ -71,17 +74,17 @@ impl GameElement for Player {
 
     fn take_turn(&mut self, elems: &GameElementObjects) {
         let stdin = io::stdin();
+        let stdout = io::stdout();
 
-        let input = stdin
-            .bytes()
-            .next()
-            .and_then(|result| result.ok())
-            .unwrap();
+        let stdout_ = stdout.lock().into_raw_mode().unwrap();
 
-        match input {
+        let mut b = [0];
+        stdin.lock().read(&mut b).unwrap();
+
+        match b[0] {
             b'h' => self.position = Coordinates { x: self.position.x - 1, y: self.position.y },
-            b'j' => self.position = Coordinates { x: self.position.x, y: self.position.y - 1 },
-            b'k' => self.position = Coordinates { x: self.position.x, y: self.position.y + 1 },
+            b'j' => self.position = Coordinates { x: self.position.x, y: self.position.y + 1 },
+            b'k' => self.position = Coordinates { x: self.position.x, y: self.position.y - 1 },
             b'l' => self.position = Coordinates { x: self.position.x + 1, y: self.position.y },
             _ => {},
         }
