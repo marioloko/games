@@ -73,9 +73,27 @@ impl Game {
             .collect::<Vec<String>>()
             .join("\n")
     }
+
+    fn start(&mut self) {
+        println!("{}", self.render());
+
+        loop {
+            let len = self.game_elements.len();
+            for _ in {0 .. len} {
+                let mut game_element = self.game_elements.pop_front()
+                    .expect("There is no game element in the game.");
+
+                game_element.take_turn(&self.game_elements);
+
+                self.game_elements.push_back(game_element);
+            }
+
+            println!("{}", self.render());
+        }
+    }
 }
 
 fn main() {
-    let game = Game::new(MAP_1, GAME_ELEMENTS_1);
-    println!("{}", game.render());
+    let mut game = Game::new(MAP_1, GAME_ELEMENTS_1);
+    game.start();
 }

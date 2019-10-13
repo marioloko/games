@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 use std::fmt;
+use std::io::{self, Read};
 
 pub type GameElementObject = Box<dyn GameElement>;
 pub type GameElementObjects = VecDeque<GameElementObject>;
@@ -24,7 +25,7 @@ pub trait GameElement: fmt::Debug {
 
     fn get_representation(&self) -> char;
 
-    fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject>;
+    fn take_turn(&mut self, elems: &GameElementObjects);
 }
 
 pub fn generate_game_element(name: &str, x: usize, y: usize) -> GameElementObject {
@@ -68,8 +69,22 @@ impl GameElement for Player {
         Self::REPRESENTATION
     }
 
-    fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
-        None
+    fn take_turn(&mut self, elems: &GameElementObjects) {
+        let stdin = io::stdin();
+
+        let input = stdin
+            .bytes()
+            .next()
+            .and_then(|result| result.ok())
+            .unwrap();
+
+        match input {
+            b'h' => self.position = Coordinates { x: self.position.x - 1, y: self.position.y },
+            b'j' => self.position = Coordinates { x: self.position.x, y: self.position.y - 1 },
+            b'k' => self.position = Coordinates { x: self.position.x, y: self.position.y + 1 },
+            b'l' => self.position = Coordinates { x: self.position.x + 1, y: self.position.y },
+            _ => {},
+        }
     }
 }
 
@@ -104,8 +119,7 @@ impl GameElement for MotionlessEnemy {
         Self::REPRESENTATION
     }
 
-    fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
-        None
+    fn take_turn(&mut self, elems: &GameElementObjects) {
     }
 }
 
@@ -140,8 +154,7 @@ impl GameElement for SlowEnemy {
         Self::REPRESENTATION
     }
 
-    fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
-        None
+    fn take_turn(&mut self, elems: &GameElementObjects) {
     }
 }
 
@@ -175,7 +188,6 @@ impl GameElement for Stairs {
         Self::REPRESENTATION
     }
 
-    fn take_turn(self, elems: &mut GameElementObjects) -> Option<GameElementObject> {
-        None
+    fn take_turn(&mut self, elems: &GameElementObjects) {
     }
 }
