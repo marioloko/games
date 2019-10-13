@@ -77,6 +77,5 @@ impl Game {
 
 fn main() {
     let game = Game::new(MAP_1, GAME_ELEMENTS_1);
-    println!("{:?}", game);
     println!("{}", game.render());
 }

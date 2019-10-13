@@ -11,7 +11,7 @@ pub struct Coordinates {
 }
 
 #[derive(Debug)]
-enum GameElementType {
+pub enum GameElementType {
     Player,
     Enemy,
     Stairs,
