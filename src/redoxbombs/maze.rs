@@ -25,6 +25,17 @@ pub struct Maze {
     width: usize,
 }
 
+impl Maze {
+    pub fn is_blocked(&self, x: usize, y: usize) -> bool {
+        let tile = &self.tiles[x + self.width * y];
+
+        match tile {
+            Tile::Empty => true,
+            Tile::Wall | Tile::BreakableWall => false,
+        }
+    }
+}
+
 impl From<&[u8]> for Maze {
     fn from(map: &[u8]) -> Self {
         let mut tiles = Vec::with_capacity(map.len());
