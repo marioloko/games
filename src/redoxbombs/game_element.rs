@@ -1,12 +1,10 @@
-extern crate termion;
-
-use game_element::termion::raw::IntoRawMode;
 use std::collections::VecDeque;
 use std::fmt;
 use std::io::{self, Read};
+use termion::raw::IntoRawMode;
 
-pub type GameElementObject = Box<dyn GameElement>;
-pub type GameElementObjects = VecDeque<GameElementObject>;
+pub type GameElementObject<'a> = Box<dyn GameElement + 'a>;
+pub type GameElementObjects<'a> = VecDeque<GameElementObject<'a>>;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Coordinates {
@@ -76,17 +74,37 @@ impl GameElement for Player {
         let stdin = io::stdin();
         let stdout = io::stdout();
 
-        let stdout_ = stdout.lock().into_raw_mode().unwrap();
+        let stdout_ = stdout.into_raw_mode().unwrap();
 
         let mut b = [0];
         stdin.lock().read(&mut b).unwrap();
 
         match b[0] {
-            b'h' => self.position = Coordinates { x: self.position.x - 1, y: self.position.y },
-            b'j' => self.position = Coordinates { x: self.position.x, y: self.position.y + 1 },
-            b'k' => self.position = Coordinates { x: self.position.x, y: self.position.y - 1 },
-            b'l' => self.position = Coordinates { x: self.position.x + 1, y: self.position.y },
-            _ => {},
+            b'h' => {
+                self.position = Coordinates {
+                    x: self.position.x - 1,
+                    y: self.position.y,
+                }
+            }
+            b'j' => {
+                self.position = Coordinates {
+                    x: self.position.x,
+                    y: self.position.y + 1,
+                }
+            }
+            b'k' => {
+                self.position = Coordinates {
+                    x: self.position.x,
+                    y: self.position.y - 1,
+                }
+            }
+            b'l' => {
+                self.position = Coordinates {
+                    x: self.position.x + 1,
+                    y: self.position.y,
+                }
+            }
+            _ => {}
         }
     }
 }
@@ -122,8 +140,7 @@ impl GameElement for MotionlessEnemy {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, elems: &GameElementObjects) {
-    }
+    fn take_turn(&mut self, elems: &GameElementObjects) {}
 }
 
 #[derive(Debug)]
@@ -157,8 +174,7 @@ impl GameElement for SlowEnemy {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, elems: &GameElementObjects) {
-    }
+    fn take_turn(&mut self, elems: &GameElementObjects) {}
 }
 
 #[derive(Debug)]
@@ -191,6 +207,5 @@ impl GameElement for Stairs {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, elems: &GameElementObjects) {
-    }
+    fn take_turn(&mut self, elems: &GameElementObjects) {}
 }

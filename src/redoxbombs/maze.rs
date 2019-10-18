@@ -26,6 +26,13 @@ pub struct Maze {
 }
 
 impl Maze {
+    pub fn empty() -> Maze {
+        Maze {
+            tiles: Vec::with_capacity(0),
+            width: 0,
+        }
+    }
+
     pub fn is_blocked(&self, x: usize, y: usize) -> bool {
         let tile = &self.tiles[x + self.width * y];
 
