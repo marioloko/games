@@ -2,6 +2,7 @@ use std::collections::VecDeque;
 use std::fmt;
 use std::io::{self, Read};
 use termion::raw::IntoRawMode;
+use maze::Maze;
 
 pub type GameElementObject<'a> = Box<dyn GameElement + 'a>;
 pub type GameElementObjects<'a> = VecDeque<GameElementObject<'a>>;
@@ -26,7 +27,7 @@ pub trait GameElement: fmt::Debug {
 
     fn get_representation(&self) -> char;
 
-    fn take_turn(&mut self, elems: &GameElementObjects);
+    fn take_turn(&mut self, elems: &GameElementObjects, maze: &Maze);
 }
 
 pub fn generate_game_element(name: &str, x: usize, y: usize) -> GameElementObject {
@@ -70,41 +71,43 @@ impl GameElement for Player {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, elems: &GameElementObjects) {
+    fn take_turn(&mut self, elems: &GameElementObjects, maze: &Maze) {
         let stdin = io::stdin();
-        let stdout = io::stdout();
-
-        let stdout_ = stdout.into_raw_mode().unwrap();
 
         let mut b = [0];
         stdin.lock().read(&mut b).unwrap();
 
-        match b[0] {
+        
+        let next = match b[0] {
             b'h' => {
-                self.position = Coordinates {
+                Coordinates {
                     x: self.position.x - 1,
                     y: self.position.y,
                 }
             }
             b'j' => {
-                self.position = Coordinates {
+                Coordinates {
                     x: self.position.x,
                     y: self.position.y + 1,
                 }
             }
             b'k' => {
-                self.position = Coordinates {
+                Coordinates {
                     x: self.position.x,
                     y: self.position.y - 1,
                 }
             }
             b'l' => {
-                self.position = Coordinates {
+                Coordinates {
                     x: self.position.x + 1,
                     y: self.position.y,
                 }
             }
-            _ => {}
+            _ => self.position
+        };
+
+        if !maze.is_blocked(next.x, next.y) {
+            self.position = next;
         }
     }
 }
@@ -140,7 +143,7 @@ impl GameElement for MotionlessEnemy {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, elems: &GameElementObjects) {}
+    fn take_turn(&mut self, _elems: &GameElementObjects, _maze: &Maze) {}
 }
 
 #[derive(Debug)]
@@ -174,7 +177,7 @@ impl GameElement for SlowEnemy {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, elems: &GameElementObjects) {}
+    fn take_turn(&mut self, elems: &GameElementObjects, maze: &Maze) {}
 }
 
 #[derive(Debug)]
@@ -207,5 +210,5 @@ impl GameElement for Stairs {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, elems: &GameElementObjects) {}
+    fn take_turn(&mut self, elems: &GameElementObjects, maze: &Maze) {}
 }

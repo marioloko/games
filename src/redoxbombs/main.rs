@@ -64,7 +64,7 @@ impl<'a, R: Read, W: Write> Game<'a, R, RawTerminal<W>> {
                     .pop_front()
                     .expect("There is no game element in the game.");
 
-                game_element.take_turn(&self.game_elements);
+                game_element.take_turn(&self.game_elements, &self.maze);
 
                 self.game_elements.push_back(game_element);
             }

@@ -37,8 +37,8 @@ impl Maze {
         let tile = &self.tiles[x + self.width * y];
 
         match tile {
-            Tile::Empty => true,
-            Tile::Wall | Tile::BreakableWall => false,
+            Tile::Empty => false,
+            Tile::Wall | Tile::BreakableWall => true,
         }
     }
 }
