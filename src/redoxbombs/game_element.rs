@@ -1,8 +1,8 @@
+use maze::Maze;
 use std::collections::VecDeque;
 use std::fmt;
 use std::io::{self, Read};
 use termion::raw::IntoRawMode;
-use maze::Maze;
 
 pub type GameElementObject<'a> = Box<dyn GameElement + 'a>;
 pub type GameElementObjects<'a> = VecDeque<GameElementObject<'a>>;
@@ -13,7 +13,47 @@ pub struct Coordinates {
     pub y: usize,
 }
 
-#[derive(Debug)]
+impl Coordinates {
+    fn real_distance(&self, other: &Coordinates) -> f64 {
+        let dx = self.x - other.x;
+        let dy = self.y - other.y;
+
+        let square_sum = dx.pow(2) + dy.pow(2);
+
+        (square_sum as f64).sqrt()
+    }
+
+    fn target_to(&self, other: &Coordinates) -> Coordinates {
+        let x = Coordinates::next_to(self.x, other.x);
+        let y = Coordinates::next_to(self.y, other.y);
+
+        Coordinates { x, y }
+    }
+
+    fn target_x_to(&self, other: &Coordinates) -> Coordinates {
+        let x = Coordinates::next_to(self.x, other.x);
+
+        Coordinates { x, y: self.y }
+    }
+
+    fn target_y_to(&self, other: &Coordinates) -> Coordinates {
+        let y = Coordinates::next_to(self.y, other.y);
+
+        Coordinates { x: self.x, y }
+    }
+
+    fn next_to(current: usize, target: usize) -> usize {
+        if current > target {
+            current - 1
+        } else if current < target {
+            current + 1
+        } else {
+            current
+        }
+    }
+}
+
+#[derive(PartialEq, Debug)]
 pub enum GameElementType {
     Player,
     Enemy,
@@ -77,33 +117,24 @@ impl GameElement for Player {
         let mut b = [0];
         stdin.lock().read(&mut b).unwrap();
 
-        
         let next = match b[0] {
-            b'h' => {
-                Coordinates {
-                    x: self.position.x - 1,
-                    y: self.position.y,
-                }
-            }
-            b'j' => {
-                Coordinates {
-                    x: self.position.x,
-                    y: self.position.y + 1,
-                }
-            }
-            b'k' => {
-                Coordinates {
-                    x: self.position.x,
-                    y: self.position.y - 1,
-                }
-            }
-            b'l' => {
-                Coordinates {
-                    x: self.position.x + 1,
-                    y: self.position.y,
-                }
-            }
-            _ => self.position
+            b'h' => Coordinates {
+                x: self.position.x - 1,
+                y: self.position.y,
+            },
+            b'j' => Coordinates {
+                x: self.position.x,
+                y: self.position.y + 1,
+            },
+            b'k' => Coordinates {
+                x: self.position.x,
+                y: self.position.y - 1,
+            },
+            b'l' => Coordinates {
+                x: self.position.x + 1,
+                y: self.position.y,
+            },
+            _ => self.position,
         };
 
         if !maze.is_blocked(next.x, next.y) {
@@ -177,7 +208,18 @@ impl GameElement for SlowEnemy {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, elems: &GameElementObjects, maze: &Maze) {}
+    fn take_turn(&mut self, elems: &GameElementObjects, maze: &Maze) {
+        let player = elems
+            .iter()
+            .filter(|elem| elem.get_type() == Player::TYPE)
+            .next()
+            .unwrap();
+
+        let next = self.position.target_to(player.get_position());
+        if !maze.is_blocked(next.x, next.y) {
+            self.position = next;
+        }
+    }
 }
 
 #[derive(Debug)]
