@@ -1,8 +1,8 @@
+use events::{Direction, InputEvent, InputEvents, ResultEvent};
 use maze::Maze;
 use std::collections::VecDeque;
 use std::fmt;
 use std::io::{self, Read};
-use termion::raw::IntoRawMode;
 
 pub type GameElementObject<'a> = Box<dyn GameElement + 'a>;
 pub type GameElementObjects<'a> = VecDeque<GameElementObject<'a>>;
@@ -51,6 +51,34 @@ impl Coordinates {
             current
         }
     }
+
+    fn up(&self) -> Coordinates {
+        Coordinates {
+            x: self.x,
+            y: self.y - 1,
+        }
+    }
+
+    fn down(&self) -> Coordinates {
+        Coordinates {
+            x: self.x,
+            y: self.y + 1,
+        }
+    }
+
+    fn left(&self) -> Coordinates {
+        Coordinates {
+            x: self.x - 1,
+            y: self.y,
+        }
+    }
+
+    fn right(&self) -> Coordinates {
+        Coordinates {
+            x: self.x + 1,
+            y: self.y,
+        }
+    }
 }
 
 #[derive(PartialEq, Debug)]
@@ -67,7 +95,12 @@ pub trait GameElement: fmt::Debug {
 
     fn get_representation(&self) -> char;
 
-    fn take_turn(&mut self, elems: &GameElementObjects, maze: &Maze);
+    fn take_turn(
+        &mut self,
+        elems: &GameElementObjects,
+        maze: &Maze,
+        events: &mut InputEvents,
+    ) -> ResultEvent;
 }
 
 pub fn generate_game_element(name: &str, x: usize, y: usize) -> GameElementObject {
@@ -111,35 +144,34 @@ impl GameElement for Player {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, elems: &GameElementObjects, maze: &Maze) {
-        let stdin = io::stdin();
+    fn take_turn(
+        &mut self,
+        elems: &GameElementObjects,
+        maze: &Maze,
+        events: &mut InputEvents,
+    ) -> ResultEvent {
+        {
+            let player_events = events.iter().filter(|event| event.is_player_event());
 
-        let mut b = [0];
-        stdin.lock().read(&mut b).unwrap();
+            for player_event in player_events {
+                let next = match player_event {
+                    InputEvent::PlayerMove(dir) => match dir {
+                        Direction::Up => self.position.up(),
+                        Direction::Down => self.position.down(),
+                        Direction::Left => self.position.left(),
+                        Direction::Right => self.position.right(),
+                    },
+                    _ => self.position,
+                };
 
-        let next = match b[0] {
-            b'h' => Coordinates {
-                x: self.position.x - 1,
-                y: self.position.y,
-            },
-            b'j' => Coordinates {
-                x: self.position.x,
-                y: self.position.y + 1,
-            },
-            b'k' => Coordinates {
-                x: self.position.x,
-                y: self.position.y - 1,
-            },
-            b'l' => Coordinates {
-                x: self.position.x + 1,
-                y: self.position.y,
-            },
-            _ => self.position,
-        };
-
-        if !maze.is_blocked(next.x, next.y) {
-            self.position = next;
+                if !maze.is_blocked(next.x, next.y) {
+                    self.position = next;
+                }
+            }
         }
+        events.retain(|event| !event.is_player_event());
+
+        ResultEvent::DoNothing
     }
 }
 
@@ -174,7 +206,14 @@ impl GameElement for MotionlessEnemy {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, _elems: &GameElementObjects, _maze: &Maze) {}
+    fn take_turn(
+        &mut self,
+        _elems: &GameElementObjects,
+        _maze: &Maze,
+        events: &mut InputEvents,
+    ) -> ResultEvent {
+        ResultEvent::DoNothing
+    }
 }
 
 #[derive(Debug)]
@@ -208,7 +247,12 @@ impl GameElement for SlowEnemy {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, elems: &GameElementObjects, maze: &Maze) {
+    fn take_turn(
+        &mut self,
+        elems: &GameElementObjects,
+        maze: &Maze,
+        events: &mut InputEvents,
+    ) -> ResultEvent {
         let player = elems
             .iter()
             .filter(|elem| elem.get_type() == Player::TYPE)
@@ -219,6 +263,8 @@ impl GameElement for SlowEnemy {
         if !maze.is_blocked(next.x, next.y) {
             self.position = next;
         }
+
+        ResultEvent::DoNothing
     }
 }
 
@@ -252,5 +298,12 @@ impl GameElement for Stairs {
         Self::REPRESENTATION
     }
 
-    fn take_turn(&mut self, elems: &GameElementObjects, maze: &Maze) {}
+    fn take_turn(
+        &mut self,
+        elems: &GameElementObjects,
+        maze: &Maze,
+        events: &mut InputEvents,
+    ) -> ResultEvent {
+        ResultEvent::DoNothing
+    }
 }

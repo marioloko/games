@@ -1,9 +1,13 @@
 extern crate termion;
 
+mod events;
 mod game_element;
+mod input;
 mod maze;
 
+use events::{InputEvent, InputEvents, ResultEvent};
 use game_element::GameElementObjects;
+use input::InputController;
 use maze::Maze;
 use std::fmt;
 use std::io::{self, Read, Write};
@@ -23,12 +27,12 @@ struct Level<'a> {
     game_elements: &'a str,
 }
 
-#[derive(Debug)]
 struct Game<'a, R: Read, W: Write> {
-    stdin: R,
+    input_controller: InputController<R>,
     stdout: W,
     maze: Maze,
     game_elements: GameElementObjects<'a>,
+    events: InputEvents,
     level: u8,
 }
 
@@ -44,11 +48,14 @@ impl<'a, R: Read, W: Write> Game<'a, R, RawTerminal<W>> {
             .into_raw_mode()
             .expect("Stdout cannot be converted to Raw Mode");
 
+        let input_controller = InputController::new(stdin);
+
         Game {
-            stdin,
+            input_controller,
             stdout,
             maze,
             game_elements,
+            events: InputEvents::new(),
             level,
         }
     }
@@ -58,13 +65,15 @@ impl<'a, R: Read, W: Write> Game<'a, R, RawTerminal<W>> {
 
         loop {
             let len = self.game_elements.len();
+            self.input_controller.read_event(&mut self.events);
             for _ in { 0..len } {
                 let mut game_element = self
                     .game_elements
                     .pop_front()
                     .expect("There is no game element in the game.");
 
-                game_element.take_turn(&self.game_elements, &self.maze);
+                let event =
+                    game_element.take_turn(&self.game_elements, &self.maze, &mut self.events);
 
                 self.game_elements.push_back(game_element);
             }
