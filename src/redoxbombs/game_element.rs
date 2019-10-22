@@ -2,7 +2,6 @@ use events::{Direction, InputEvent, InputEvents, ResultEvent};
 use maze::Maze;
 use std::collections::VecDeque;
 use std::fmt;
-use std::io::{self, Read};
 
 pub type GameElementObject<'a> = Box<dyn GameElement + 'a>;
 pub type GameElementObjects<'a> = VecDeque<GameElementObject<'a>>;

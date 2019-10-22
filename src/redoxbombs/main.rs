@@ -3,16 +3,16 @@ extern crate termion;
 mod events;
 mod game_element;
 mod input;
+mod output;
 mod maze;
 
 use events::{InputEvent, InputEvents, ResultEvent};
 use game_element::GameElementObjects;
 use input::InputController;
+use output::OutputController;
 use maze::Maze;
 use std::fmt;
 use std::io::{self, Read, Write};
-use termion::raw::{IntoRawMode, RawTerminal};
-use termion::{clear, cursor};
 
 const MAP_1: &'static [u8] = include_bytes!("map1.txt");
 const GAME_ELEMENTS_1: &'static str = include_str!("game_elements1.txt");
@@ -29,30 +29,28 @@ struct Level<'a> {
 
 struct Game<'a, R: Read, W: Write> {
     input_controller: InputController<R>,
-    stdout: W,
+    output_controller: OutputController<W>,
     maze: Maze,
     game_elements: GameElementObjects<'a>,
     events: InputEvents,
     level: u8,
 }
 
-impl<'a, R: Read, W: Write> Game<'a, R, RawTerminal<W>> {
-    fn new(stdin: R, stdout: W) -> Game<'a, R, RawTerminal<W>> {
+impl<'a, R: Read, W: Write> Game<'a, R, W> {
+    fn new(stdin: R, stdout: W) -> Game<'a, R, W> {
         let level: u8 = 0;
         let level_info = &LEVELS[level as usize];
 
         let maze = Maze::from(level_info.map);
         let game_elements = load_game_elements(level_info.game_elements);
 
-        let mut stdout = stdout
-            .into_raw_mode()
-            .expect("Stdout cannot be converted to Raw Mode");
 
         let input_controller = InputController::new(stdin);
+        let output_controller = OutputController::new(stdout);
 
         Game {
             input_controller,
-            stdout,
+            output_controller,
             maze,
             game_elements,
             events: InputEvents::new(),
@@ -83,43 +81,10 @@ impl<'a, R: Read, W: Write> Game<'a, R, RawTerminal<W>> {
     }
 
     fn render(&mut self) {
-        let game = self.to_string();
-        write!(
-            self.stdout,
-            "{clear}{cursor}{game}{hide}",
-            clear = clear::All,
-            cursor = cursor::Goto(1, 1),
-            game = game,
-            hide = cursor::Hide
-        )
-        .expect("Cannot render game.");
-
-        self.stdout.flush().unwrap();
-    }
-}
-
-impl<'a, R: Read, W: Write> fmt::Display for Game<'a, R, RawTerminal<W>> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut map: Vec<Vec<char>> = self
-            .maze
-            .to_string()
-            .lines()
-            .map(|line| line.chars().collect())
-            .collect();
-
-        for game_element in &self.game_elements {
-            let position = game_element.get_position();
-
-            map[position.y][position.x] = game_element.get_representation();
-        }
-
-        let map = map
-            .into_iter()
-            .map(|line| line.into_iter().collect())
-            .collect::<Vec<String>>()
-            .join("\n\r");
-
-        write!(f, "{}", map)
+        self.output_controller.clear();
+        self.output_controller.draw_maze(&self.maze);
+        self.output_controller.draw_game_elements(&self.game_elements);
+        self.output_controller.render();
     }
 }
 
