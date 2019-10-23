@@ -1,14 +1,22 @@
+use game_element::{GameElementObject, GameElementObjects};
+use maze::Maze;
+use std::io::Write;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::{clear, cursor};
-use std::io::Write;
-use maze::Maze;
-use game_element::{GameElementObject, GameElementObjects};
 
+/// The `OutputController` writes the game state using
+/// a `RawTerminal`. So its output is not cannocalized.
 pub struct OutputController<W: Write> {
     output: RawTerminal<W>,
 }
 
 impl<W: Write> OutputController<W> {
+    /// Create a `OutputController` from an object which implements the
+    /// Write trait.
+    ///
+    /// The output is converted to `RawTerminal` to change the TTY to non
+    /// cannonical mode. This enables reading from the TTY character by
+    /// character, without waiting for new line.
     pub fn new(output: W) -> OutputController<W> {
         let output = output
             .into_raw_mode()
@@ -17,20 +25,23 @@ impl<W: Write> OutputController<W> {
         OutputController { output }
     }
 
+    /// Render drawn elements.
     pub fn render(&mut self) {
         self.output.flush();
     }
 
+    /// Remove all the drawn elements.
     pub fn clear(&mut self) {
-        write!(self.output, "{}", clear::All)
-            .expect("OutputController cannot clear output");
+        write!(self.output, "{}", clear::All).expect("OutputController cannot clear output");
     }
 
+    /// Draw the maze using the output. (But it is not render on
+    /// the screen until `render` is called).
     pub fn draw_maze(&mut self, maze: &Maze) {
         let maze = maze.to_string().replace("\n", "\n\r");
 
         write!(
-            self.output, 
+            self.output,
             "{cursor}{maze}{hide}",
             cursor = cursor::Goto(1, 1),
             maze = maze.to_string(),
@@ -39,12 +50,16 @@ impl<W: Write> OutputController<W> {
         .expect("OutputController cannot draw the map.");
     }
 
+    /// Draw every given game element. (But they are not render on
+    /// the screen until `render` is called).
     pub fn draw_game_elements(&mut self, game_elements: &GameElementObjects) {
         for game_element in game_elements {
             self.draw_game_element(game_element);
         }
     }
 
+    /// Draw a game element in the location defined by its coordinates.
+    /// (But it is not render on the screen until `render` is called).
     fn draw_game_element(&mut self, game_element: &GameElementObject) {
         let position = game_element.get_position();
         let x = 1 + position.x as u16;
@@ -68,5 +83,4 @@ impl<W: Write> OutputController<W> {
             )
         });
     }
-
 }

@@ -3,14 +3,14 @@ extern crate termion;
 mod events;
 mod game_element;
 mod input;
-mod output;
 mod maze;
+mod output;
 
 use events::{InputEvent, InputEvents, ResultEvent};
 use game_element::GameElementObjects;
 use input::InputController;
-use output::OutputController;
 use maze::Maze;
+use output::OutputController;
 use std::fmt;
 use std::io::{self, Read, Write};
 
@@ -44,7 +44,6 @@ impl<'a, R: Read, W: Write> Game<'a, R, W> {
         let maze = Maze::from(level_info.map);
         let game_elements = load_game_elements(level_info.game_elements);
 
-
         let input_controller = InputController::new(stdin);
         let output_controller = OutputController::new(stdout);
 
@@ -62,8 +61,9 @@ impl<'a, R: Read, W: Write> Game<'a, R, W> {
         self.render();
 
         loop {
-            let len = self.game_elements.len();
             self.input_controller.read_event(&mut self.events);
+
+            let len = self.game_elements.len();
             for _ in { 0..len } {
                 let mut game_element = self
                     .game_elements
@@ -83,7 +83,8 @@ impl<'a, R: Read, W: Write> Game<'a, R, W> {
     fn render(&mut self) {
         self.output_controller.clear();
         self.output_controller.draw_maze(&self.maze);
-        self.output_controller.draw_game_elements(&self.game_elements);
+        self.output_controller
+            .draw_game_elements(&self.game_elements);
         self.output_controller.render();
     }
 }

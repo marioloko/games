@@ -1,13 +1,18 @@
 use std::collections::VecDeque;
 
+/// `InputEvent` a queue.
 pub type InputEvents = VecDeque<InputEvent>;
 
+/// An `InputEvent` is an event which is processed by
+/// a `GameElement`.
 pub enum InputEvent {
     PlayerMove(Direction),
     EnemyRelease { id: usize },
     GameQuit,
 }
 
+/// A `ResultEvent`is an event produced by a `GameElement`
+/// as a consequence of processing an `InputElem`.
 pub enum ResultEvent {
     NextLevel,
     PlayerDied,
@@ -15,6 +20,8 @@ pub enum ResultEvent {
     DoNothing,
 }
 
+/// It defines the four directions that can be take by the
+/// player.
 pub enum Direction {
     Up,
     Down,
@@ -23,6 +30,7 @@ pub enum Direction {
 }
 
 impl InputEvent {
+    /// Check if the event is an event to be handle by the player.
     pub fn is_player_event(&self) -> bool {
         match self {
             InputEvent::PlayerMove(_) => true,
