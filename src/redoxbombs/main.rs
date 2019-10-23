@@ -63,6 +63,12 @@ impl<'a, R: Read, W: Write> Game<'a, R, W> {
         loop {
             self.input_controller.read_event(&mut self.events);
 
+            if let Some(event) = self.events.front() {
+                if event.is_quit_event() {
+                    break
+                }
+            }
+
             let len = self.game_elements.len();
             for _ in { 0..len } {
                 let mut game_element = self
@@ -85,6 +91,14 @@ impl<'a, R: Read, W: Write> Game<'a, R, W> {
         self.output_controller.draw_maze(&self.maze);
         self.output_controller
             .draw_game_elements(&self.game_elements);
+        self.output_controller.render();
+    }
+}
+
+impl<'a, R: Read, W: Write> Drop for Game<'a, R, W> {
+    /// Clear the screen game elements on drop.
+    fn drop(&mut self) {
+        self.output_controller.clear();
         self.output_controller.render();
     }
 }

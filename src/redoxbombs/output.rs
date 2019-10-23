@@ -2,7 +2,7 @@ use game_element::{GameElementObject, GameElementObjects};
 use maze::Maze;
 use std::io::Write;
 use termion::raw::{IntoRawMode, RawTerminal};
-use termion::{clear, cursor};
+use termion::{clear, cursor, style};
 
 /// The `OutputController` writes the game state using
 /// a `RawTerminal`. So its output is not cannocalized.
@@ -32,7 +32,14 @@ impl<W: Write> OutputController<W> {
 
     /// Remove all the drawn elements.
     pub fn clear(&mut self) {
-        write!(self.output, "{}", clear::All).expect("OutputController cannot clear output");
+        write!(
+            self.output, 
+            "{clear}{style}{cursor}", 
+            clear = clear::All,
+            style = style::Reset,
+            cursor = cursor::Goto(1, 1),
+        )
+        .expect("OutputController cannot clear output");
     }
 
     /// Draw the maze using the output. (But it is not render on

@@ -30,10 +30,18 @@ pub enum Direction {
 }
 
 impl InputEvent {
-    /// Check if the event is an event to be handle by the player.
+    /// Check if the event is to be handle by the player.
     pub fn is_player_event(&self) -> bool {
         match self {
             InputEvent::PlayerMove(_) => true,
+            _ => false,
+        }
+    }
+
+    /// Check if the event is to exit the game.
+    pub fn is_quit_event(&self) -> bool {
+        match self {
+            InputEvent::GameQuit => true,
             _ => false,
         }
     }
