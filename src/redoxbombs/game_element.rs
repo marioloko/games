@@ -2,6 +2,8 @@ use events::{Direction, InputEvent, InputEvents, ResultEvent};
 use maze::Maze;
 use std::collections::VecDeque;
 use std::fmt;
+use std::ops::Sub;
+use rand::{thread_rng, Rng};
 
 pub type GameElementObject<'a> = Box<dyn GameElement + 'a>;
 pub type GameElementObjects<'a> = VecDeque<GameElementObject<'a>>;
@@ -12,14 +14,30 @@ pub struct Coordinates {
     pub y: usize,
 }
 
+fn abs_sub<T>(x: T, y: T) -> <T as std::ops::Sub>::Output
+    where T: Sub + PartialOrd {
+    if x > y {
+        x - y
+    } else {
+        y - x
+    }
+}
+
 impl Coordinates {
-    fn real_distance(&self, other: &Coordinates) -> f64 {
-        let dx = self.x - other.x;
-        let dy = self.y - other.y;
+    fn euclidean_distance(&self, other: &Coordinates) -> f64 {
+        let dx = abs_sub(self.x, other.x);
+        let dy = abs_sub(self.y, other.y);
 
         let square_sum = dx.pow(2) + dy.pow(2);
 
         (square_sum as f64).sqrt()
+    }
+
+    fn manhattan_distance(&self, other: &Coordinates) -> usize {
+        let dx = abs_sub(self.x, other.x);
+        let dy = abs_sub(self.y, other.y);
+
+        dx + dy
     }
 
     fn target_to(&self, other: &Coordinates) -> Coordinates {
@@ -258,10 +276,32 @@ impl GameElement for SlowEnemy {
             .next()
             .unwrap();
 
-        let next = self.position.target_to(player.get_position());
-        if !maze.is_blocked(next.x, next.y) {
-            self.position = next;
-        }
+        let mut directions = vec![
+            self.position.up(),
+            self.position.down(),
+            self.position.left(),
+            self.position.right(),
+            self.position
+        ];
+
+        // Unorder them to increase movement randomness
+        thread_rng().shuffle(&mut directions);
+        
+
+        let next_position = directions
+            .into_iter()
+            .filter(|dir| !maze.is_blocked(dir.x, dir.y))
+            .map(|dir| {
+                let dist = dir.manhattan_distance(player.get_position());
+                (dir, dist)
+            })
+            .max_by(|(_, dist1), (_, dist2)| {
+                dist2.partial_cmp(dist1).unwrap()
+            })
+            .map(|(dir, _)| dir)
+            .unwrap();
+            
+        self.position = next_position;
 
         ResultEvent::DoNothing
     }

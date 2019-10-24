@@ -1,4 +1,5 @@
 extern crate termion;
+extern crate rand;
 
 mod events;
 mod game_element;
@@ -11,7 +12,6 @@ use game_element::GameElementObjects;
 use input::InputController;
 use maze::Maze;
 use output::OutputController;
-use std::fmt;
 use std::io::{self, Read, Write};
 
 const MAP_1: &'static [u8] = include_bytes!("map1.txt");
