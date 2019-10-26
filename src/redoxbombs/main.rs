@@ -22,11 +22,15 @@ const LEVELS: &'static [Level] = &[Level {
     game_elements: GAME_ELEMENTS_1,
 }];
 
+/// A `Level` stores information about the map to generate in a level,
+/// and the game elements of that level.
 struct Level<'a> {
     map: &'a [u8],
     game_elements: &'a str,
 }
 
+/// A `Game` contains information about how to handle the input, output,
+/// the events and the game state.
 struct Game<'a, R: Read, W: Write> {
     input_controller: InputController<R>,
     output_controller: OutputController<W>,
@@ -37,6 +41,7 @@ struct Game<'a, R: Read, W: Write> {
 }
 
 impl<'a, R: Read, W: Write> Game<'a, R, W> {
+    /// Initializes a new game.
     fn new(stdin: R, stdout: W) -> Game<'a, R, W> {
         let level: u8 = 0;
         let level_info = &LEVELS[level as usize];
@@ -57,6 +62,7 @@ impl<'a, R: Read, W: Write> Game<'a, R, W> {
         }
     }
 
+    /// Start the main game loop.
     fn start(&mut self) {
         self.render();
 
@@ -86,6 +92,7 @@ impl<'a, R: Read, W: Write> Game<'a, R, W> {
         }
     }
 
+    /// Render the maze and the game elements on the screen.
     fn render(&mut self) {
         self.output_controller.clear();
         self.output_controller.draw_maze(&self.maze);
@@ -103,6 +110,7 @@ impl<'a, R: Read, W: Write> Drop for Game<'a, R, W> {
     }
 }
 
+/// Load game element objects from a string literal representing them.
 fn load_game_elements(game_elements: &str) -> GameElementObjects {
     game_elements
         .lines()
