@@ -18,14 +18,21 @@ impl<'a> GameElementsLoader<'a> {
     ///     in the current level. It has the following format.
     /// ```
     /// Player 1 2
-    /// MotionlessEnemy 7 8
+    /// Enemy 7 8
     ///```
     pub fn new(input: &'a str) -> GameElementsLoader<'a> {
         let mut game_elements = HashMap::new();
-        let lines = input.lines();
+
+        // Split the input in several trimmed lines. It discards
+        // blank lines and lines starting with "#" comments.
+        let lines = input
+            .lines()
+            .map(|line| line.trim())
+            .filter(|line| !line.is_empty())
+            .filter(|line| !line.starts_with("#"));
 
         for line in lines {
-            let mut it = line.split(' ');
+            let mut it = line.split_whitespace();
 
             let name = it
                 .next()
@@ -77,9 +84,8 @@ impl<'a> GameElementsLoader<'a> {
     /// literal. A `Enemy`definition consists on the name of the enemy followed by
     /// its x and y coordinates as integer.
     ///
-    /// Ex: `MotionlessEnemy 1 2`
-    ///     `SlowEnemy 1 2`
-    ///         where `x = 1` and `y = 2`.
+    /// Ex: `Enemy 1 2`, where `x = 1` and `y = 2`.
+    ///
     ///
     /// returns: 0 or more `Enemy` trait objects.
     ///
