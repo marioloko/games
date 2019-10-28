@@ -2,8 +2,8 @@ use maze::Maze;
 use parser::GameElementsLoader;
 use game_element::{Player, Enemy, Stairs};
 
-const MAP_1: &'static [u8] = include_bytes!("map1.txt");
-const GAME_ELEMENTS_1: &'static str = include_str!("game_elements1.txt");
+const MAP_1: &'static [u8] = include_bytes!("assets/levels/1/map.txt");
+const GAME_ELEMENTS_1: &'static str = include_str!("assets/levels/1/game_elements.txt");
 
 const RAW_LEVELS: &'static [RawLevel] = &[
     RawLevel {
