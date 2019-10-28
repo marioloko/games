@@ -1,5 +1,6 @@
 Player 1 1
-SlowEnemy 19 1
-SlowEnemy 10 7
-MotionlessEnemy 1 7
-MotionlessEnemy 2 7
+Enemy 19 1
+Enemy 10 7
+Enemy 1 7
+Enemy 2 7
+Stairs 20 7

@@ -1,4 +1,4 @@
-use game_element::{GameElementObject, GameElementObjects};
+use game_element::{GameElement};
 use maze::Maze;
 use std::io::Write;
 use termion::raw::{IntoRawMode, RawTerminal};
@@ -59,7 +59,7 @@ impl<W: Write> OutputController<W> {
 
     /// Draw every given game element. (But they are not render on
     /// the screen until `render` is called).
-    pub fn draw_game_elements(&mut self, game_elements: &GameElementObjects) {
+    pub fn draw_game_elements(&mut self, game_elements: &[impl GameElement]) {
         for game_element in game_elements {
             self.draw_game_element(game_element);
         }
@@ -67,7 +67,7 @@ impl<W: Write> OutputController<W> {
 
     /// Draw a game element in the location defined by its coordinates.
     /// (But it is not render on the screen until `render` is called).
-    fn draw_game_element(&mut self, game_element: &GameElementObject) {
+    pub fn draw_game_element(&mut self, game_element: &impl GameElement) {
         let position = game_element.get_position();
         let x = 1 + position.x as u16;
         let y = 1 + position.y as u16;

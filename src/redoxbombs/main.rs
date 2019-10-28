@@ -3,62 +3,52 @@ extern crate rand;
 
 mod events;
 mod game_element;
-mod input;
+mod controllers;
 mod maze;
-mod output;
+mod parser;
+mod level;
 
-use events::{InputEvent, InputEvents, ResultEvent};
-use game_element::GameElementObjects;
-use input::InputController;
-use maze::Maze;
-use output::OutputController;
+use std::collections::VecDeque;
+use controllers::InputController;
+use controllers::OutputController;
+use events::{InputEvent, ResultEvent};
 use std::io::{self, Read, Write};
-
-const MAP_1: &'static [u8] = include_bytes!("map1.txt");
-const GAME_ELEMENTS_1: &'static str = include_str!("game_elements1.txt");
-
-const LEVELS: &'static [Level] = &[Level {
-    map: MAP_1,
-    game_elements: GAME_ELEMENTS_1,
-}];
-
-/// A `Level` stores information about the map to generate in a level,
-/// and the game elements of that level.
-struct Level<'a> {
-    map: &'a [u8],
-    game_elements: &'a str,
-}
+use level::Level;
 
 /// A `Game` contains information about how to handle the input, output,
 /// the events and the game state.
-struct Game<'a, R: Read, W: Write> {
+struct Game<R: Read, W: Write> {
     input_controller: InputController<R>,
     output_controller: OutputController<W>,
-    maze: Maze,
-    game_elements: GameElementObjects<'a>,
-    events: InputEvents,
-    level: u8,
+    level: Level,
+    input_events: VecDeque<InputEvent>,
+    result_events: VecDeque<ResultEvent>,
 }
 
-impl<'a, R: Read, W: Write> Game<'a, R, W> {
+impl<R: Read, W: Write> Game<R, W> {
     /// Initializes a new game.
-    fn new(stdin: R, stdout: W) -> Game<'a, R, W> {
-        let level: u8 = 0;
-        let level_info = &LEVELS[level as usize];
-
-        let maze = Maze::from(level_info.map);
-        let game_elements = load_game_elements(level_info.game_elements);
-
+    fn new(stdin: R, stdout: W) -> Game<R, W> {
         let input_controller = InputController::new(stdin);
         let output_controller = OutputController::new(stdout);
+        let level = Level::new();
+
+        // Create a release event for every enemy to allow them to
+        // start moving.
+        let enemies_count = level.enemies.len();
+        let input_events = {0..enemies_count}
+            .map(|id| {
+                InputEvent::EnemyRelease { id }
+            }).collect();
+
+        // At the beginning there is no input event.
+        let result_events = VecDeque::new();
 
         Game {
             input_controller,
             output_controller,
-            maze,
-            game_elements,
-            events: InputEvents::new(),
             level,
+            input_events,
+            result_events,
         }
     }
 
@@ -66,26 +56,46 @@ impl<'a, R: Read, W: Write> Game<'a, R, W> {
     fn start(&mut self) {
         self.render();
 
-        loop {
-            self.input_controller.read_event(&mut self.events);
+        'main: loop {
+            self.input_controller.read_event(&mut self.input_events);
 
-            if let Some(event) = self.events.front() {
-                if event.is_quit_event() {
-                    break
-                }
+            // Read all the input events in the queue and push the results to the
+            // result events queue.
+            while let Some(input_event) = self.input_events.pop_front() {
+                let result_event = match input_event {
+                    InputEvent::GameQuit => break 'main,
+                    InputEvent::PlayerMove(_) => {
+                        self.level.player.take_turn(&self.level.maze, input_event)
+                    },
+                    InputEvent::EnemyRelease { id } => {
+                        self.level.enemies
+                            .get_mut(id)
+                            .unwrap()
+                            .take_turn(&self.level.player, &self.level.maze, input_event)
+                    },
+                };
+
+                self.result_events.push_back(result_event);
             }
 
-            let len = self.game_elements.len();
-            for _ in { 0..len } {
-                let mut game_element = self
-                    .game_elements
-                    .pop_front()
-                    .expect("There is no game element in the game.");
+            // Handle all the result events.
+            while let Some(result_event) = self.result_events.pop_front() {
+                match result_event {
+                    ResultEvent::NextLevel => {
+                        let next_level = self.level
+                            .next()
+                            .expect("There is no next level");
 
-                let event =
-                    game_element.take_turn(&self.game_elements, &self.maze, &mut self.events);
-
-                self.game_elements.push_back(game_element);
+                        self.level = next_level;
+                    },
+                    ResultEvent::EnemyBlock { id } => {
+                        let input_event = InputEvent::EnemyRelease { id };
+                        self.input_events.push_back(input_event);
+                    },
+                    ResultEvent::PlayerDied => break 'main,
+                    ResultEvent::EnemyDied { id } => unimplemented!(),
+                    ResultEvent::DoNothing => continue,
+                }
             }
 
             self.render();
@@ -95,45 +105,33 @@ impl<'a, R: Read, W: Write> Game<'a, R, W> {
     /// Render the maze and the game elements on the screen.
     fn render(&mut self) {
         self.output_controller.clear();
-        self.output_controller.draw_maze(&self.maze);
+
+        // Draw the maze.
         self.output_controller
-            .draw_game_elements(&self.game_elements);
+            .draw_maze(&self.level.maze);
+
+        // Draw the player.
+        self.output_controller
+            .draw_game_element(&self.level.player);
+
+        // Draw the enemies.
+        self.output_controller
+            .draw_game_elements(&self.level.enemies);
+
+        // Draw the stairs.
+        self.output_controller
+            .draw_game_element(&self.level.stairs);
+
         self.output_controller.render();
     }
 }
 
-impl<'a, R: Read, W: Write> Drop for Game<'a, R, W> {
+impl<R: Read, W: Write> Drop for Game<R, W> {
     /// Clear the screen game elements on drop.
     fn drop(&mut self) {
         self.output_controller.clear();
         self.output_controller.render();
     }
-}
-
-/// Load game element objects from a string literal representing them.
-fn load_game_elements(game_elements: &str) -> GameElementObjects {
-    game_elements
-        .lines()
-        .map(|line| {
-            let mut it = line.split(' ');
-
-            let name = it.next().expect("Name not found for game element.");
-
-            let x = it
-                .next()
-                .expect("X Coordinate not found for game element.")
-                .parse()
-                .expect("X Coordinate is not a valid integer.");
-
-            let y = it
-                .next()
-                .expect("X Coordinate not found for game element.")
-                .parse()
-                .expect("X Coordinate is not a valid integer.");
-
-            game_element::generate_game_element(name, x, y)
-        })
-        .collect()
 }
 
 fn main() {

@@ -17,6 +17,7 @@ pub enum ResultEvent {
     NextLevel,
     PlayerDied,
     EnemyDied { id: usize },
+    EnemyBlock { id: usize },
     DoNothing,
 }
 
