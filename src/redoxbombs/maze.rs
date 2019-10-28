@@ -2,10 +2,11 @@ use std::fmt;
 
 /// Represent a Tile in the map.
 ///
-/// Empty: That position is not blocked and game elements can go through.
-/// Wall: That position is blocked then game elements cannot go through.
-/// BreakableWall: That position is blocked then game elements cannot
-///     go through, however if a bomb hit it, then it becomes `Empty`.
+/// The possible values are:
+/// - Empty: That position is not blocked and game elements can go through.
+/// - Wall: That position is blocked then game elements cannot go through.
+/// - BreakableWall: That position is blocked, then game elements cannot
+///   go through, however if a bomb hit it, then it becomes `Empty`.
 #[derive(Debug)]
 enum Tile {
     Empty,
@@ -27,7 +28,6 @@ impl fmt::Display for Tile {
 }
 
 /// A `Maze` is set of tiles which represent the map state.
-/// Differentiating empty and blocked cells.
 #[derive(Debug)]
 pub struct Maze {
     tiles: Vec<Tile>,
@@ -35,14 +35,6 @@ pub struct Maze {
 }
 
 impl Maze {
-    /// Create and empty Maze.
-    pub fn empty() -> Maze {
-        Maze {
-            tiles: Vec::with_capacity(0),
-            width: 0,
-        }
-    }
-
     /// Check if certain position of the maze is blocked.
     ///
     /// x: The horizontal coordinate in the maze.
@@ -63,6 +55,8 @@ impl From<&[u8]> for Maze {
     fn from(map: &[u8]) -> Self {
         let mut tiles = Vec::with_capacity(map.len());
 
+        // Count the number of characters until the first '\n' as 
+        // the map width.
         let width = map.iter().take_while(|&b| *b != b'\n').count();
 
         for &tile in map {

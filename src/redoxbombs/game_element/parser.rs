@@ -55,7 +55,7 @@ impl<'a> GameElementsLoader<'a> {
     }
 
     /// Generate a `Player` from the information gathered from the config string
-    /// literal. A `Player`definition consists on the name `Player` followed by
+    /// literal. A `Player` definition consists on the name `Player` followed by
     /// its x and y coordinates as integer.
     ///
     /// Ex: `Player 1 2`, where `x = 1` and `y = 2`.
@@ -87,7 +87,7 @@ impl<'a> GameElementsLoader<'a> {
     /// Ex: `Enemy 1 2`, where `x = 1` and `y = 2`.
     ///
     ///
-    /// returns: 0 or more `Enemy` trait objects.
+    /// returns: 0 or more `Enemy` objects.
     ///
     /// panics: 
     /// - This method panics if any enemy `x` coordinate is not and integer.
@@ -116,10 +116,10 @@ impl<'a> GameElementsLoader<'a> {
     ///
     /// Ex: `Stairs 1 2`, where `x = 1` and `y = 2`.
     ///
-    /// returns: A single Player.
+    /// returns: A single Stairs object.
     ///
     /// panics: 
-    /// - If no player exists.
+    /// - If no stair exists.
     /// - If `x` coordinate is not and integer.
     /// - If `y` coordinate is not and integer.
     pub fn generate_stairs(&self) -> Stairs {

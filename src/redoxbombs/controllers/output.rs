@@ -17,6 +17,9 @@ impl<W: Write> OutputController<W> {
     /// The output is converted to `RawTerminal` to change the TTY to non
     /// cannonical mode. This enables reading from the TTY character by
     /// character, without waiting for new line.
+    ///
+    /// panics:
+    /// - If output cannot be converted to `RawTerminal`.
     pub fn new(output: W) -> OutputController<W> {
         let output = output
             .into_raw_mode()
@@ -31,6 +34,9 @@ impl<W: Write> OutputController<W> {
     }
 
     /// Remove all the drawn elements.
+    ///
+    /// panics:
+    /// - If it is not possible to clear the screen.
     pub fn clear(&mut self) {
         write!(
             self.output, 
@@ -44,6 +50,9 @@ impl<W: Write> OutputController<W> {
 
     /// Draw the maze using the output. (But it is not render on
     /// the screen until `render` is called).
+    ///
+    /// panics:
+    /// - If the maze cannot be drawn.
     pub fn draw_maze(&mut self, maze: &Maze) {
         let maze = maze.to_string().replace("\n", "\n\r");
 
@@ -67,6 +76,9 @@ impl<W: Write> OutputController<W> {
 
     /// Draw a game element in the location defined by its coordinates.
     /// (But it is not render on the screen until `render` is called).
+    ///
+    /// panics:
+    /// - If it is not possible to draw the given game element.
     pub fn draw_game_element(&mut self, game_element: &impl GameElement) {
         let position = game_element.get_position();
         let x = 1 + position.x as u16;

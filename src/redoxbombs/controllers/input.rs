@@ -2,7 +2,7 @@ use events::{Direction, InputEvent, InputEvents};
 use std::io::Read;
 
 /// The `InputController` reads the user input and
-/// translate it into `InputEvents` associated with
+/// translate it into `InputEvent` associated with
 /// a task.
 pub struct InputController<R: Read> {
     input: R,
@@ -17,6 +17,13 @@ impl<R: Read> InputController<R> {
 
     /// Read a keyboard event and convert it to its correspondant
     /// `InputEvent`.
+    ///
+    /// return:
+    /// - PlayerMove(dir) if the user pressed any movement key.
+    /// - GameQuit if the user pressed 'q' to exit the game.
+    ///
+    /// panics:
+    /// - If no character was read from stdin.
     pub fn read_event(&mut self, events: &mut InputEvents) {
         let mut b = [0];
 

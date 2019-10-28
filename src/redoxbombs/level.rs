@@ -5,6 +5,8 @@ use game_element::{Player, Enemy, Stairs};
 const MAP_1: &'static [u8] = include_bytes!("assets/levels/1/map.txt");
 const GAME_ELEMENTS_1: &'static str = include_str!("assets/levels/1/game_elements.txt");
 
+/// `RAW_LEVELS` contains the map and game element information to generate
+/// the different levels.
 const RAW_LEVELS: &'static [RawLevel] = &[
     RawLevel {
         map: MAP_1,
@@ -61,8 +63,10 @@ impl Level {
     fn with_index(index: usize) -> Option<Level> {
         let raw_level = RAW_LEVELS.get(index)?;
 
+        // Load map defined in the selected RawLevel.
         let maze = Maze::from(raw_level.map);
 
+        // Load the different game elements using the parser.
         let loader = GameElementsLoader::new(raw_level.game_elements);
         let player = loader.generate_player();
         let enemies = loader.generate_enemies();
