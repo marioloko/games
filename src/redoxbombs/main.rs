@@ -13,6 +13,7 @@ use controllers::OutputController;
 use events::{InputEvent, ResultEvent};
 use std::io::{self, Read, Write};
 use level::Level;
+use std::{time, thread};
 
 /// A `Game` contains information about how to handle the input, output,
 /// the events and the game state.
@@ -97,6 +98,10 @@ impl<R: Read, W: Write> Game<R, W> {
                 }
             }
 
+            // Wait 0.01 seconds before moving again
+            let wait_time = time::Duration::from_millis(10);
+            thread::sleep(wait_time);
+
             self.render();
         }
     }
@@ -134,7 +139,7 @@ impl<R: Read, W: Write> Drop for Game<R, W> {
 }
 
 fn main() {
-    let stdin = io::stdin();
+    let stdin = termion::async_stdin();
     let mut stdout = io::stdout();
 
     let mut game = Game::new(stdin, stdout);
