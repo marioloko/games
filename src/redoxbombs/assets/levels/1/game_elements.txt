@@ -1,6 +1,7 @@
-Player 1 1
-Enemy 19 1
-Enemy 10 7
-Enemy 1 7
-Enemy 2 7
-Stairs 20 7
+# Name     x   y
+Player     1   1
+Enemy     19   1
+Enemy     10   7
+Enemy      1   7
+Enemy      2   7
+Stairs    20   7
