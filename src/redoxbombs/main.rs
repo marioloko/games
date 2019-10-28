@@ -5,7 +5,6 @@ mod events;
 mod game_element;
 mod controllers;
 mod maze;
-mod parser;
 mod level;
 
 use std::collections::VecDeque;

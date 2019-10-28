@@ -1,8 +1,11 @@
+pub mod parser;
+
 mod coordinates;
 mod enemy;
 mod stairs;
 mod player;
 mod game_element;
+
 
 pub use self::coordinates::Coordinates;
 pub use self::enemy::Enemy;
