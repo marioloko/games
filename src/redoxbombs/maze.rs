@@ -55,7 +55,7 @@ impl From<&[u8]> for Maze {
     fn from(map: &[u8]) -> Self {
         let mut tiles = Vec::with_capacity(map.len());
 
-        // Count the number of characters until the first '\n' as 
+        // Count the number of characters until the first '\n' as
         // the map width.
         let width = map.iter().take_while(|&b| *b != b'\n').count();
 

@@ -1,9 +1,5 @@
+use game_element::{Enemy, Player, Stairs};
 use std::collections::HashMap;
-use game_element::{
-    Player,
-    Stairs,
-    Enemy,
-};
 
 /// A `GameElementsLoader` is a game elements parser. It holds the information
 /// needed to parse game elements from string.
@@ -34,9 +30,7 @@ impl<'a> GameElementsLoader<'a> {
         for line in lines {
             let mut it = line.split_whitespace();
 
-            let name = it
-                .next()
-                .expect("Name not found for game element.");
+            let name = it.next().expect("Name not found for game element.");
 
             let arguments = it.collect();
 
@@ -62,12 +56,13 @@ impl<'a> GameElementsLoader<'a> {
     ///
     /// return: A single Player.
     ///
-    /// panics: 
+    /// panics:
     /// - This method panics if no player exists.
     /// - This method panics if `x` coordinate is not and integer.
     /// - This method panics if `y` coordinate is not and integer.
     pub fn generate_player(&self) -> Player {
-        let args = self.game_elements
+        let args = self
+            .game_elements
             .get(Player::NAME)
             .expect("Expected 1 player on the game elements config, found 0.")
             .get(0)
@@ -89,28 +84,30 @@ impl<'a> GameElementsLoader<'a> {
     ///
     /// returns: 0 or more `Enemy` objects.
     ///
-    /// panics: 
+    /// panics:
     /// - This method panics if any enemy `x` coordinate is not and integer.
     /// - This method panics if any enemy `y` coordinate is not and integer.
     pub fn generate_enemies(&self) -> Vec<Enemy> {
-        let enemies = self.game_elements
-            .get(Enemy::NAME);
+        let enemies = self.game_elements.get(Enemy::NAME);
 
         let enemies = match enemies {
             None => return Vec::new(),
             Some(enemies) => enemies,
         };
 
-        enemies.iter().map(|args| {
-            let x = extract_x_arg(args, Enemy::NAME);
+        enemies
+            .iter()
+            .map(|args| {
+                let x = extract_x_arg(args, Enemy::NAME);
 
-            let y = extract_y_arg(args, Enemy::NAME);
+                let y = extract_y_arg(args, Enemy::NAME);
 
-            Enemy::new(x, y)
-        }).collect()
+                Enemy::new(x, y)
+            })
+            .collect()
     }
 
-    /// Generate a `Stairs` object from the information gathered from 
+    /// Generate a `Stairs` object from the information gathered from
     /// the config string literal. A `Stairs` object definition consists
     /// on the name `Stairs` followed by its x and y coordinates as integer.
     ///
@@ -118,12 +115,13 @@ impl<'a> GameElementsLoader<'a> {
     ///
     /// returns: A single Stairs object.
     ///
-    /// panics: 
+    /// panics:
     /// - If no stair exists.
     /// - If `x` coordinate is not and integer.
     /// - If `y` coordinate is not and integer.
     pub fn generate_stairs(&self) -> Stairs {
-        let args = self.game_elements
+        let args = self
+            .game_elements
             .get(Stairs::NAME)
             .expect("Expected 1 stairs object on the game elements config, found 0.")
             .get(0)
@@ -146,13 +144,15 @@ impl<'a> GameElementsLoader<'a> {
 /// - If `x` coordinate is not and integer.
 fn extract_x_arg(args: &[&str], game_element_name: &str) -> usize {
     args.get(0)
-        .expect(
-            &format!("X Coordinate not found for {}.", game_element_name)
-        )
+        .expect(&format!(
+            "X Coordinate not found for {}.",
+            game_element_name
+        ))
         .parse()
-        .expect(
-            &format!("{} X Coordinate is not a valid integer.", game_element_name)
-        )
+        .expect(&format!(
+            "{} X Coordinate is not a valid integer.",
+            game_element_name
+        ))
 }
 
 /// Extract the `y` coordinate from the arguments to create the game element,
@@ -164,11 +164,13 @@ fn extract_x_arg(args: &[&str], game_element_name: &str) -> usize {
 /// - If `y` coordinate is not and integer.
 fn extract_y_arg(args: &[&str], game_element_name: &str) -> usize {
     args.get(1)
-        .expect(
-            &format!("Y Coordinate not found for {}.", game_element_name)
-        )
+        .expect(&format!(
+            "Y Coordinate not found for {}.",
+            game_element_name
+        ))
         .parse()
-        .expect(
-            &format!("{} Y Coordinate is not a valid integer.", game_element_name)
-        )
+        .expect(&format!(
+            "{} Y Coordinate is not a valid integer.",
+            game_element_name
+        ))
 }

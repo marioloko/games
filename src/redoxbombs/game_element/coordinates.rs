@@ -9,7 +9,6 @@ pub struct Coordinates {
     pub y: usize,
 }
 
-
 impl Coordinates {
     /// Compute the eclidean distance between two `Coordinates`.
     /// Formula: sqrt( (x1 - x2)^2 + (y1 - y2)^2 )
@@ -101,7 +100,9 @@ impl Coordinates {
 /// Compute the absolute difference (with no negative values) between
 /// x and y.
 fn abs_sub<T>(x: T, y: T) -> <T as std::ops::Sub>::Output
-    where T: Sub + PartialOrd {
+where
+    T: Sub + PartialOrd,
+{
     if x > y {
         x - y
     } else {

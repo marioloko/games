@@ -1,7 +1,7 @@
+use events::{Direction, InputEvent, ResultEvent};
 use game_element::Coordinates;
 use game_element::GameElement;
 use maze::Maze;
-use events::{InputEvent, ResultEvent, Direction};
 
 /// Represent the Player.
 #[derive(Debug)]
@@ -25,11 +25,7 @@ impl Player {
 
     /// Take a turn given an input event and return a result event as a
     /// result.
-    pub fn take_turn(
-        &mut self,
-        maze: &Maze,
-        event: InputEvent,
-    ) -> ResultEvent {
+    pub fn take_turn(&mut self, maze: &Maze, event: InputEvent) -> ResultEvent {
         let next_position = match event {
             InputEvent::PlayerMove(dir) => match dir {
                 Direction::Up => self.position.up(),

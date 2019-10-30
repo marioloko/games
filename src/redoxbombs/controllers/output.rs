@@ -1,4 +1,4 @@
-use game_element::{GameElement};
+use game_element::GameElement;
 use maze::Maze;
 use std::io::Write;
 use termion::raw::{IntoRawMode, RawTerminal};
@@ -39,8 +39,8 @@ impl<W: Write> OutputController<W> {
     /// - If it is not possible to clear the screen.
     pub fn clear(&mut self) {
         write!(
-            self.output, 
-            "{clear}{style}{cursor}", 
+            self.output,
+            "{clear}{style}{cursor}",
             clear = clear::All,
             style = style::Reset,
             cursor = cursor::Goto(1, 1),

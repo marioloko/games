@@ -1,8 +1,8 @@
+use events::{InputEvent, ResultEvent};
 use game_element::Coordinates;
 use game_element::GameElement;
 use game_element::Player;
 use maze::Maze;
-use events::{InputEvent, ResultEvent};
 
 /// A `Stairs` object represents an object used to
 /// go to the next level.
@@ -27,12 +27,7 @@ impl Stairs {
 
     /// Take a turn given an input event and return a result event as a
     /// result.
-    fn take_turn(
-        &mut self,
-        player: &Player,
-        maze: &Maze,
-        event: InputEvent,
-    ) -> ResultEvent {
+    fn take_turn(&mut self, player: &Player, maze: &Maze, event: InputEvent) -> ResultEvent {
         ResultEvent::DoNothing
     }
 }

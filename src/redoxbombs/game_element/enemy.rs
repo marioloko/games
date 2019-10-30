@@ -1,9 +1,9 @@
-use rand::{self, Rng};
+use events::{InputEvent, ResultEvent};
 use game_element::Coordinates;
 use game_element::GameElement;
 use game_element::Player;
 use maze::Maze;
-use events::{InputEvent,ResultEvent};
+use rand::{self, Rng};
 
 /// A `Enemy` object represents a game enemy.
 #[derive(Debug)]
@@ -27,13 +27,7 @@ impl Enemy {
 
     /// Take a turn given an input event and return a result event as a
     /// result.
-    pub fn take_turn(
-        &mut self,
-        player: &Player,
-        maze: &Maze,
-        event: InputEvent,
-    ) -> ResultEvent {
-
+    pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: InputEvent) -> ResultEvent {
         let result_event = match event {
             InputEvent::EnemyRelease { id } => ResultEvent::EnemyBlock { id },
             _ => return ResultEvent::DoNothing,
@@ -44,7 +38,7 @@ impl Enemy {
             self.position.down(),
             self.position.left(),
             self.position.right(),
-            self.position
+            self.position,
         ];
 
         // Unorder them to increase movement randomness
@@ -57,14 +51,11 @@ impl Enemy {
                 let dist = dir.manhattan_distance(player.get_position());
                 (dir, dist)
             })
-            .max_by(|(_, dist1), (_, dist2)| {
-                dist2.partial_cmp(dist1).unwrap()
-            })
+            .max_by(|(_, dist1), (_, dist2)| dist2.partial_cmp(dist1).unwrap())
             .map(|(dir, _)| dir)
             .unwrap();
-            
-        self.position = next_position;
 
+        self.position = next_position;
 
         result_event
     }
