@@ -1,18 +1,22 @@
-use events::{Direction, InputEvent, InputEvents};
+use events::{Direction, InputEvent};
 use std::io::Read;
+use termion::event::Key;
+use termion::input::{Keys, TermRead};
 
 /// The `InputController` reads the user input and
 /// translate it into `InputEvent` associated with
 /// a task.
 pub struct InputController<R: Read> {
-    input: R,
+    input: Keys<R>,
 }
 
 impl<R: Read> InputController<R> {
     /// Create an `InputController` from any object which implements
     /// the read trait.
     pub fn new(input: R) -> InputController<R> {
-        InputController { input }
+        InputController {
+            input: input.keys(),
+        }
     }
 
     /// Read a keyboard event and convert it to its correspondant
@@ -20,22 +24,26 @@ impl<R: Read> InputController<R> {
     ///
     /// return:
     /// - PlayerMove(dir) if the user pressed any movement key.
+    /// - GamePause if the user pressed the 'Esc' key.
     /// - GameQuit if the user pressed 'q' to exit the game.
     ///
     /// panics:
     /// - If no character was read from stdin.
-    pub fn read_event(&mut self, events: &mut InputEvents) {
-        let mut b = [0];
+    pub fn next_event(&mut self) -> Option<InputEvent> {
+        let key = match self.input.next() {
+            None => return None,
+            Some(key) => key.expect("Error reading key inputs."),
+        };
 
-        self.input.read(&mut b).unwrap();
-
-        match b[0] {
-            b'h' => events.push_back(InputEvent::PlayerMove(Direction::Left)),
-            b'j' => events.push_back(InputEvent::PlayerMove(Direction::Down)),
-            b'k' => events.push_back(InputEvent::PlayerMove(Direction::Up)),
-            b'l' => events.push_back(InputEvent::PlayerMove(Direction::Right)),
-            b'q' => events.push_back(InputEvent::GameQuit),
-            _ => (),
+        match key {
+            Key::Char('h') => Some(InputEvent::PlayerMove(Direction::Left)),
+            Key::Char('j') => Some(InputEvent::PlayerMove(Direction::Down)),
+            Key::Char('k') => Some(InputEvent::PlayerMove(Direction::Up)),
+            Key::Char('l') => Some(InputEvent::PlayerMove(Direction::Right)),
+            Key::Char('l') => Some(InputEvent::PlayerMove(Direction::Right)),
+            Key::Char('q') => Some(InputEvent::GameQuit),
+            Key::Esc => Some(InputEvent::GamePause),
+            _ => None,
         }
     }
 }

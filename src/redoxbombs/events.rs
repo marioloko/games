@@ -10,10 +10,12 @@ pub type ResultEvents = VecDeque<ResultEvent>;
 /// The possible values are:
 /// - PlayerMove(direction): Move the player towards `direction`.
 /// - EnemyRelease { id }: Allow enemy with number `id` to move.
-/// - GameQuit: Exit the game.
+/// - GamePause: Stop the game keeping the state.
+/// - GameQuit: Set the system to exit.
 pub enum InputEvent {
     PlayerMove(Direction),
     EnemyRelease { id: usize },
+    GamePause,
     GameQuit,
 }
 
@@ -22,12 +24,16 @@ pub enum InputEvent {
 ///
 /// The possibe values are:
 /// - DoNothing: Discard event.
+/// - GamePause: Stop the game keeping the state.
+/// - GameExit: Leave the main loop.
 /// - PlayerDied: The player died so exit the game.
 /// - EnemyDied { id }: Remove enemy with number `id`.
 /// - EnemyBlock { id }: Do not allow enemy with `id` to move.
 /// - NextLevel: Change the game to the next level.
 pub enum ResultEvent {
     DoNothing,
+    GamePause,
+    GameExit,
     PlayerDied,
     EnemyDied { id: usize },
     EnemyBlock { id: usize },
