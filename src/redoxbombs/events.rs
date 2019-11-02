@@ -15,6 +15,10 @@ pub enum InputEvent {
     /// It is NOT triggered by a user input.
     EnemyRelease { id: usize },
 
+    /// Allow a `Stairs` object to take a turn.
+    /// It is NOT triggered by a user input.
+    StairsRelease,
+
     /// Stop the game keeping the state.
     GamePause,
 
@@ -44,6 +48,9 @@ pub enum ResultEvent {
 
     /// Do not allow enemy with `id` to move.
     EnemyBlock { id: usize },
+
+    /// Do not allow stairs to take turn.
+    StairsBlock,
 
     /// Change the game to the next level.
     NextLevel,

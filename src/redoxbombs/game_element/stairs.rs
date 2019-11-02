@@ -28,8 +28,12 @@ impl Stairs {
 
     /// Take a turn given an input event and return a result event as a
     /// result.
-    fn take_turn(&mut self, player: &Player, maze: &Maze, event: InputEvent) -> ResultEvent {
-        ResultEvent::DoNothing
+    pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: InputEvent) -> ResultEvent {
+        match event {
+            InputEvent::StairsRelease 
+                if player.get_position() == self.get_position() => ResultEvent::NextLevel,
+            _ => ResultEvent::StairsBlock,
+        }
     }
 }
 

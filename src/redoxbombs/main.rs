@@ -70,9 +70,10 @@ impl<R: Read, W: Write> Game<R, W> {
         // Create a release event for every enemy to allow them to
         // start moving.
         let enemies_count = level.enemies.len();
-        let input_events = { 0..enemies_count }
+        let mut input_events: InputEvents = { 0..enemies_count }
             .map(|id| InputEvent::EnemyRelease { id })
             .collect();
+        input_events.push_back(InputEvent::StairsRelease);
 
         // At the beginning there is no input event.
         let result_events = ResultEvents::new();
@@ -141,6 +142,11 @@ impl<R: Read, W: Write> Game<R, W> {
                 &self.level.maze,
                 input_event,
             ),
+            InputEvent::StairsRelease => self.level.stairs.take_turn(
+                &self.level.player, 
+                &self.level.maze,
+                input_event,
+            ),
             InputEvent::GameQuit => ResultEvent::GameExit,
             InputEvent::GamePause => ResultEvent::GamePause,
         }
@@ -164,6 +170,9 @@ impl<R: Read, W: Write> Game<R, W> {
             }
             ResultEvent::GamePause => {
                 self.game_mode = GameMode::Paused;
+            }
+            ResultEvent::StairsBlock => {
+                self.input_events.push_back(InputEvent::StairsRelease);
             }
             ResultEvent::EnemyDied { id } => unimplemented!(),
             ResultEvent::DoNothing => (),
