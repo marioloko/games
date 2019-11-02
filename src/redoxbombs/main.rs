@@ -16,31 +16,47 @@ use std::io::{self, Read, Write};
 use std::thread;
 use std::time::Duration;
 
+/// Milliseconds to sleep when paused to reduce the CPU usage
+/// due to busy waiting.
 const PAUSE_SLEEP_MILLIS: u64 = 300;
 
 /// The `GameMode` defines the state of the game.
-///
-/// The possible values are:
-/// - Running: If the game is not blocked and reading
-/// for user inputs. The game is in the main loop.
-/// - Paused: If the game is blocked but inside the
-/// main loop.
-/// - Ended: If the game is exiting the main loop.
 enum GameMode {
+    /// If the game is not blocked and reading for user inputs.
+    /// The game is in the main loop.
     Running,
+
+    /// If the game is blocked but inside the main loop.
     Paused,
+
+    /// If the game is exiting the main loop.
     Ended,
 }
 
 /// A `Game` contains information about how to handle the input, output,
 /// the events and the game state.
 struct Game<R: Read, W: Write> {
+    /// The component charged with reading the input and converting
+    /// it to the appropriated `InputEvents`.
     input_controller: InputController<R>,
+
+    /// The component charged with writing to the output.
     output_controller: OutputController<W>,
+
+    /// The representation of the current level. It holds
+    /// the `Maze` and the different `GameElements`.
     level: Level,
+
+    /// A queue holding every input event entered by the user.
     input_events: InputEvents,
+
+    /// A queue holding every result event.
     result_events: ResultEvents,
+
+    /// The controller charged with scheduled events.
     time_controller: TimeController,
+
+    /// The meta status of the game.
     game_mode: GameMode,
 }
 

@@ -8,12 +8,13 @@ use rand::{self, Rng};
 /// A `Enemy` object represents a game enemy.
 #[derive(Debug)]
 pub struct Enemy {
+    /// The `Coordinates` where this game element is located.
     position: Coordinates,
 }
 
 impl Enemy {
     /// The name used for the parser to identify the an `Enemy` object.
-    pub const NAME: &'static str = "Enemy";
+    pub(super) const NAME: &'static str = "Enemy";
 
     /// Character to represent an `Enemy` object in the `Maze`.
     const REPRESENTATION: char = 'E';

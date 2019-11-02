@@ -5,8 +5,9 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::{clear, cursor, style};
 
 /// The `OutputController` writes the game state using
-/// a `RawTerminal`. So its output is not cannocalized.
+/// a `RawTerminal`.
 pub struct OutputController<W: Write> {
+    /// A non cannonical writer.
     output: RawTerminal<W>,
 }
 

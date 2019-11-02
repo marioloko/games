@@ -5,17 +5,20 @@ pub type InputEvents = VecDeque<InputEvent>;
 pub type ResultEvents = VecDeque<ResultEvent>;
 
 /// An `InputEvent` is an event which is processed by
-/// a `GameElement`.
-///
-/// The possible values are:
-/// - PlayerMove(direction): Move the player towards `direction`.
-/// - EnemyRelease { id }: Allow enemy with number `id` to move.
-/// - GamePause: Stop the game keeping the state.
-/// - GameQuit: Set the system to exit.
+/// a `GameElement`. They are usually triggered by an
+/// user input.
 pub enum InputEvent {
+    /// Move the player towards `direction`.
     PlayerMove(Direction),
+
+    /// Allow enemy with number `id` to move.
+    /// It is NOT triggered by a user input.
     EnemyRelease { id: usize },
+
+    /// Stop the game keeping the state.
     GamePause,
+
+    /// Set the system to exit.
     GameQuit,
 }
 
@@ -23,28 +26,41 @@ pub enum InputEvent {
 /// as a consequence of processing an `InputEvent`.
 ///
 /// The possibe values are:
-/// - DoNothing: Discard event.
-/// - GamePause: Stop the game keeping the state.
-/// - GameExit: Leave the main loop.
-/// - PlayerDied: The player died so exit the game.
-/// - EnemyDied { id }: Remove enemy with number `id`.
-/// - EnemyBlock { id }: Do not allow enemy with `id` to move.
-/// - NextLevel: Change the game to the next level.
 pub enum ResultEvent {
+    /// Discard event. Used when no extra action is required.
     DoNothing,
+
+    /// Stop the game keeping the state.
     GamePause,
+
+    /// Leave the main loop.
     GameExit,
+
+    /// The player died so exit the game.
     PlayerDied,
+
+    /// Remove enemy with number `id`.
     EnemyDied { id: usize },
+
+    /// Do not allow enemy with `id` to move.
     EnemyBlock { id: usize },
+
+    /// Change the game to the next level.
     NextLevel,
 }
 
 /// It defines the four directions that can be take by the
 /// player.
 pub enum Direction {
+    /// Towards north.
     Up,
+
+    /// Towards south.
     Down,
+
+    /// Toards west.
     Left,
+
+    /// Toards east.
     Right,
 }

@@ -7,6 +7,7 @@ use termion::input::{Keys, TermRead};
 /// translate it into `InputEvent` associated with
 /// a task.
 pub struct InputController<R: Read> {
+    /// Keyboard pressed keys iterator.
     input: Keys<R>,
 }
 
@@ -32,15 +33,14 @@ impl<R: Read> InputController<R> {
     pub fn next_event(&mut self) -> Option<InputEvent> {
         let key = match self.input.next() {
             None => return None,
-            Some(key) => key.expect("Error reading key inputs."),
+            Some(key) => key.expect("Error reading key inputs with `InputController`."),
         };
 
         match key {
-            Key::Char('h') => Some(InputEvent::PlayerMove(Direction::Left)),
-            Key::Char('j') => Some(InputEvent::PlayerMove(Direction::Down)),
-            Key::Char('k') => Some(InputEvent::PlayerMove(Direction::Up)),
-            Key::Char('l') => Some(InputEvent::PlayerMove(Direction::Right)),
-            Key::Char('l') => Some(InputEvent::PlayerMove(Direction::Right)),
+            Key::Char('h') | Key::Left => Some(InputEvent::PlayerMove(Direction::Left)),
+            Key::Char('j') | Key::Down => Some(InputEvent::PlayerMove(Direction::Down)),
+            Key::Char('k') | Key::Up => Some(InputEvent::PlayerMove(Direction::Up)),
+            Key::Char('l') | Key::Right => Some(InputEvent::PlayerMove(Direction::Right)),
             Key::Char('q') => Some(InputEvent::GameQuit),
             Key::Esc => Some(InputEvent::GamePause),
             _ => None,

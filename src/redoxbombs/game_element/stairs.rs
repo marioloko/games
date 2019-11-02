@@ -8,12 +8,13 @@ use maze::Maze;
 /// go to the next level.
 #[derive(Debug)]
 pub struct Stairs {
+    /// The `Coordinates` where this game element is located.
     position: Coordinates,
 }
 
 impl Stairs {
     /// The name used for the parser to identify the an `Stairs` object.
-    pub const NAME: &'static str = "Stairs";
+    pub(super) const NAME: &'static str = "Stairs";
 
     /// Character to represent an `Stair` object in the `Maze`.
     const REPRESENTATION: char = '%';

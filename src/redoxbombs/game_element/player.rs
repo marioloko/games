@@ -6,12 +6,13 @@ use maze::Maze;
 /// Represent the Player.
 #[derive(Debug)]
 pub struct Player {
+    /// The `Coordinates` where this game element is located.
     position: Coordinates,
 }
 
 impl Player {
     /// The name used for the parser to identify the an `Player` object.
-    pub const NAME: &'static str = "Player";
+    pub(super) const NAME: &'static str = "Player";
 
     /// Character to represent an `Player` object in the `Maze`.
     const REPRESENTATION: char = '@';

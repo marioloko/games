@@ -3,14 +3,16 @@ use std::fmt;
 /// Represent a Tile in the map.
 ///
 /// The possible values are:
-/// - Empty: That position is not blocked and game elements can go through.
-/// - Wall: That position is blocked then game elements cannot go through.
-/// - BreakableWall: That position is blocked, then game elements cannot
-///   go through, however if a bomb hit it, then it becomes `Empty`.
 #[derive(Debug)]
 enum Tile {
+    /// That position is not blocked and game elements can go through.
     Empty,
+
+    /// That position is blocked then game elements cannot go through.
     Wall,
+
+    /// That position is blocked, then game elements cannot go through,
+    /// however if a bomb hits it, then it becomes `Empty`.
     BreakableWall,
 }
 
@@ -30,7 +32,10 @@ impl fmt::Display for Tile {
 /// A `Maze` is set of tiles which represent the map state.
 #[derive(Debug)]
 pub struct Maze {
+    /// The state of the different tiles composing the maze.
     tiles: Vec<Tile>,
+
+    /// The width of the `Maze` in tiles.
     width: usize,
 }
 

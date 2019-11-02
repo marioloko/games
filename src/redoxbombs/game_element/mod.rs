@@ -1,3 +1,4 @@
+/// A `GameElement` parser.
 pub mod parser;
 
 mod coordinates;
@@ -6,8 +7,17 @@ mod game_element;
 mod player;
 mod stairs;
 
+/// The `Coordiantes` for representing a `GameElement` position.
 pub use self::coordinates::Coordinates;
-pub use self::enemy::Enemy;
+
+/// The trait for representing a `GameElement`.
 pub use self::game_element::GameElement;
+
+/// The definition of a `Player`.
 pub use self::player::Player;
+
+/// The definition of a `Enemy`.
+pub use self::enemy::Enemy;
+
+/// The definition of `Stairs`.
 pub use self::stairs::Stairs;

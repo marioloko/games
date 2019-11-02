@@ -4,6 +4,8 @@ use std::collections::HashMap;
 /// A `GameElementsLoader` is a game elements parser. It holds the information
 /// needed to parse game elements from string.
 pub struct GameElementsLoader<'a> {
+    /// Map linking an game_element name with its arguments to create a new
+    /// object
     game_elements: HashMap<&'a str, Vec<Vec<&'a str>>>,
 }
 

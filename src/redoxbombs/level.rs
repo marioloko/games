@@ -15,17 +15,29 @@ const RAW_LEVELS: &'static [RawLevel] = &[RawLevel {
 /// A `RawLevel` stores the map and game elements information needed
 /// to generate a level.
 struct RawLevel<'a> {
+    /// The `ASCII` representation of the map.
     map: &'a [u8],
+
+    /// The text representation of the game elements to be used by a parser.
     game_elements: &'a str,
 }
 
 /// A `Level` stores information about the map to generate in a level,
 /// and the game elements of that level.
 pub struct Level {
+    /// The sequence number of the current level.
     index: usize,
+
+    /// The `Maze` used during this level.
     pub maze: Maze,
+
+    /// The element representing the `Player` during this level.
     pub player: Player,
+
+    /// The set of enemies during this level.
     pub enemies: Vec<Enemy>,
+
+    /// The stairs to go to the next level.
     pub stairs: Stairs,
 }
 
