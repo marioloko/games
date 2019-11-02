@@ -1,9 +1,9 @@
-use events::InputEvent;
+use events::GameEvent;
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::time::{Duration, Instant};
 
-/// A `Timeout` wraps an `InputEvent` which shall be executed
+/// A `Timeout` wraps an `GameEvent` which shall be executed
 /// after a period of time.
 struct Timeout {
     /// The `creation_time` is the instant in which the timeout was created.
@@ -13,15 +13,15 @@ struct Timeout {
     /// timeout to expire.
     expire_after: Duration,
 
-    /// The `event` field is the `InputEvent` to be released after the
+    /// The `event` field is the `GameEvent` to be released after the
     /// timeout expiration.
-    event: InputEvent,
+    event: GameEvent,
 }
 
 impl Timeout {
     /// Create a new `Timeout` given some milliseconds to wait and
-    /// an `InputEvent` to wrap.
-    fn new(millis: u64, event: InputEvent) -> Timeout {
+    /// an `GameEvent` to wrap.
+    fn new(millis: u64, event: GameEvent) -> Timeout {
         Timeout {
             creation_time: Instant::now(),
             expire_after: Duration::from_millis(millis),
@@ -95,15 +95,15 @@ impl TimeController {
         }
     }
 
-    /// Schedule a new `Timeout` to return an `InputEvent` after some millis.
-    pub fn schedule_event_in(&mut self, millis: u64, event: InputEvent) {
+    /// Schedule a new `Timeout` to return an `GameEvent` after some millis.
+    pub fn schedule_event_in(&mut self, millis: u64, event: GameEvent) {
         let timeout = Timeout::new(millis, event);
         self.scheduled_events.push(timeout);
     }
 
-    /// Pop the `InputEvent` corresponding to the `Timeout` whose expiration
+    /// Pop the `GameEvent` corresponding to the `Timeout` whose expiration
     /// time is the sooner, if it expiration time has due.
-    pub fn pop_event(&mut self) -> Option<InputEvent> {
+    pub fn pop_event(&mut self) -> Option<GameEvent> {
         if !self.has_any_expired_timeout() {
             return None;
         }

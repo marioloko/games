@@ -1,4 +1,4 @@
-use events::{InputEvent, ResultEvent};
+use events::{GameEvent, ResultEvent};
 use game_element::Coordinates;
 use game_element::GameElement;
 use game_element::Player;
@@ -26,11 +26,11 @@ impl Stairs {
         Self { position }
     }
 
-    /// Take a turn given an input event and return a result event as a
+    /// Take a turn given a game event and return a result event as a
     /// result.
-    pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: InputEvent) -> ResultEvent {
+    pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: GameEvent) -> ResultEvent {
         match event {
-            InputEvent::StairsRelease 
+            GameEvent::StairsRelease 
                 if player.get_position() == self.get_position() => ResultEvent::NextLevel,
             _ => ResultEvent::StairsBlock,
         }

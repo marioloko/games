@@ -1,4 +1,4 @@
-use events::{InputEvent, ResultEvent};
+use events::{GameEvent, ResultEvent};
 use game_element::Coordinates;
 use game_element::GameElement;
 use game_element::Player;
@@ -28,9 +28,9 @@ impl Enemy {
 
     /// Take a turn given an input event and return a result event as a
     /// result.
-    pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: InputEvent) -> ResultEvent {
+    pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: GameEvent) -> ResultEvent {
         let result_event = match event {
-            InputEvent::EnemyRelease { id } => ResultEvent::EnemyBlock { id },
+            GameEvent::EnemyRelease { id } => ResultEvent::EnemyBlock { id },
             _ => return ResultEvent::DoNothing,
         };
 
