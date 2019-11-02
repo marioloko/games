@@ -166,6 +166,10 @@ impl<R: Read, W: Write> Game<R, W> {
                 &self.level.maze,
                 game_event,
             ),
+            GameEvent::EnemyCheckCollision { id } => self.level.enemies.get_mut(id).unwrap().check_collision(
+                &self.level.player,
+                game_event,
+            ),
         }
     }
 
@@ -190,6 +194,9 @@ impl<R: Read, W: Write> Game<R, W> {
             }
             ResultEvent::StairsBlock => {
                 self.game_events.push_back(GameEvent::StairsRelease);
+            }
+            ResultEvent::EnemyCheckCollision { id } => {
+                self.game_events.push_back(GameEvent::EnemyCheckCollision { id });
             }
             ResultEvent::EnemyDied { id } => unimplemented!(),
             ResultEvent::DoNothing => (),
@@ -221,12 +228,13 @@ impl<R: Read, W: Write> Game<R, W> {
 
     /// Gnerate the initial events to wake up every `GameElement` at least once.
     fn generate_init_game_events(level: &Level) -> VecDeque<GameEvent> {
-        // Generate a release event for every enemy to force them to take_turn
-        // at least once.
-        let enemies_count = level.enemies.len();
-        let mut game_events: VecDeque<_> = { 0..enemies_count }
-            .map(|id| GameEvent::EnemyRelease { id })
-            .collect();
+        let mut game_events = VecDeque::new();
+
+        // Generate basic enemy game events.
+        for (id, _) in level.enemies.iter().enumerate() {
+            game_events.push_back(GameEvent::EnemyRelease { id });
+            game_events.push_back(GameEvent::EnemyCheckCollision { id });
+        }
 
         // Generate a release event for stairs to force it to take turn at least
         // once.

@@ -37,6 +37,7 @@ impl Player {
             _ => self.position,
         };
 
+        // Check if computed position is blocked.
         if !maze.is_blocked(next_position.x, next_position.y) {
             self.position = next_position;
         }

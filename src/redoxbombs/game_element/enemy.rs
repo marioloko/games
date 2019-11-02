@@ -26,14 +26,32 @@ impl Enemy {
         Self { position }
     }
 
-    /// Take a turn given an input event and return a result event as a
-    /// result.
+    /// Take a turn given an input event and return a result event as a result.
     pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: GameEvent) -> ResultEvent {
         let result_event = match event {
             GameEvent::EnemyRelease { id } => ResultEvent::EnemyBlock { id },
             _ => return ResultEvent::DoNothing,
         };
 
+        // Move the enemy towards the next non-blocked position closer to the player.
+        self.move_towards(player, maze);
+
+        result_event
+    }
+
+    /// Checks if the enemy and the player has collided, and if so, kill the player.
+    pub fn check_collision(&mut self, player: &Player, game_event: GameEvent) -> ResultEvent {
+        match game_event {
+            GameEvent::EnemyCheckCollision { id }
+                if self.get_position() == player.get_position() => ResultEvent::PlayerDied,
+            GameEvent::EnemyCheckCollision { id } => ResultEvent::EnemyCheckCollision { id },
+            _ => ResultEvent::DoNothing,
+        }
+    }
+
+    /// Move the enemy towards the next non-blocked position closer to the player.
+    fn move_towards(&mut self, player: &Player, maze: &Maze) {
+        // Compute all the possible positions to move.
         let mut directions = vec![
             self.position.up(),
             self.position.down(),
@@ -42,23 +60,31 @@ impl Enemy {
             self.position,
         ];
 
-        // Unorder them to increase movement randomness
+        // Unorder them to increase movement randomness.
         rand::thread_rng().shuffle(&mut directions);
 
+        // Select the next position.
         let next_position = directions
             .into_iter()
+            // Discard blocked positions.
             .filter(|dir| !maze.is_blocked(dir.x, dir.y))
+            // Compute the manhattan distance to the player for every
+            // non-blocked surrounded positions.
             .map(|dir| {
                 let dist = dir.manhattan_distance(player.get_position());
                 (dir, dist)
             })
-            .max_by(|(_, dist1), (_, dist2)| dist2.partial_cmp(dist1).unwrap())
+            // Get the position whose distance is the lesser as the next
+            // position.
+            .min_by(|(_, dist1), (_, dist2)| dist1.partial_cmp(dist2).unwrap())
+            // Extract the coordinates of the chosen position and discard
+            // the distance.
             .map(|(dir, _)| dir)
             .unwrap();
 
+        // Update the position to the next non-blocked position
+        // closer to the player.
         self.position = next_position;
-
-        result_event
     }
 }
 
