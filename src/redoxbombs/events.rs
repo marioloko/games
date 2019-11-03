@@ -1,5 +1,6 @@
 /// An `InputEvent` is an event produced as a consequence
 /// of a user input. 
+#[derive(Debug)]
 pub enum InputEvent {
     /// Move the player towards `direction`.
     PlayerMove(Direction),
@@ -36,6 +37,7 @@ pub enum GameEvent {
 /// as a consequence of processing an `InputEvent`.
 ///
 /// The possibe values are:
+#[derive(Debug)]
 pub enum ResultEvent {
     /// Discard event. Used when no extra action is required.
     DoNothing,
@@ -73,6 +75,7 @@ pub enum ResultEvent {
 
 /// It defines the four directions that can be take by the
 /// player.
+#[derive(Debug)]
 pub enum Direction {
     /// Towards north.
     Up,
