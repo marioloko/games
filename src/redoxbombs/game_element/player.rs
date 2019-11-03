@@ -1,6 +1,7 @@
 use events::{Direction, InputEvent, ResultEvent};
 use game_element::Coordinates;
 use game_element::GameElement;
+use game_element::Bomb;
 use maze::Maze;
 
 /// Represent the Player.
@@ -43,6 +44,23 @@ impl Player {
         }
 
         ResultEvent::DoNothing
+    }
+
+    /// If the input event is `PlayerCreateBomb` generates a `ResultEvent` containing
+    /// the coordinates where to place the bomb.
+    pub fn put_bomb(&self, bombs: &mut Vec<Option<Bomb>>, event: InputEvent) -> ResultEvent {
+        match event {
+            InputEvent::PlayerCreateBomb => {
+                let position = self.get_position();
+                let (x, y) = (position.x, position.y);
+
+                bombs.push(Some(Bomb::new(x, y)));
+
+                let id = bombs.len() - 1;
+                ResultEvent::BombCreated { id }
+            }
+            _ => ResultEvent::DoNothing,
+        }
     }
 }
 

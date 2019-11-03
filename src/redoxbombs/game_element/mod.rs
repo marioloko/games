@@ -6,6 +6,7 @@ mod enemy;
 mod game_element;
 mod player;
 mod stairs;
+mod bomb;
 
 /// The `Coordiantes` for representing a `GameElement` position.
 pub use self::coordinates::Coordinates;
@@ -21,3 +22,6 @@ pub use self::enemy::Enemy;
 
 /// The definition of `Stairs`.
 pub use self::stairs::Stairs;
+
+/// The definition of a `Bomb`.
+pub use self::bomb::Bomb;

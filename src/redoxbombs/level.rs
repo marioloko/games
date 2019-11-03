@@ -1,5 +1,5 @@
 use game_element::parser::GameElementsLoader;
-use game_element::{Enemy, Player, Stairs};
+use game_element::{Enemy, Player, Stairs, Bomb};
 use maze::Maze;
 
 const MAP_1: &'static [u8] = include_bytes!("assets/levels/1/map.txt");
@@ -39,6 +39,9 @@ pub struct Level {
 
     /// The stairs to go to the next level.
     pub stairs: Stairs,
+
+    /// Bombs in the `Maze`.
+    pub bombs: Vec<Option<Bomb>>,
 }
 
 impl Level {
@@ -80,6 +83,7 @@ impl Level {
         let player = loader.generate_player();
         let enemies = loader.generate_enemies();
         let stairs = loader.generate_stairs();
+        let bombs = Vec::new();
 
         let level = Level {
             index,
@@ -87,6 +91,7 @@ impl Level {
             player,
             enemies,
             stairs,
+            bombs,
         };
 
         Some(level)

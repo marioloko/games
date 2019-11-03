@@ -41,6 +41,7 @@ impl<R: Read> InputController<R> {
             Key::Char('j') | Key::Down => Some(InputEvent::PlayerMove(Direction::Down)),
             Key::Char('k') | Key::Up => Some(InputEvent::PlayerMove(Direction::Up)),
             Key::Char('l') | Key::Right => Some(InputEvent::PlayerMove(Direction::Right)),
+            Key::Char('b') => Some(InputEvent::PlayerCreateBomb),
             Key::Char('q') => Some(InputEvent::GameQuit),
             Key::Esc => Some(InputEvent::GamePause),
             _ => None,

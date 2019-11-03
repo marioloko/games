@@ -75,6 +75,17 @@ impl<W: Write> OutputController<W> {
         }
     }
 
+    /// Draw every optional game element. (But they are not render on
+    /// the screen until `render` is called).
+    pub fn draw_optional_game_elements(&mut self, game_elements: &[Option<impl GameElement>]) {
+        for game_element in game_elements {
+            match game_element {
+                Some(game_element) => self.draw_game_element(game_element),
+                _ => continue,
+            }
+        }
+    }
+
     /// Draw a game element in the location defined by its coordinates.
     /// (But it is not render on the screen until `render` is called).
     ///

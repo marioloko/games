@@ -146,6 +146,7 @@ impl<R: Read, W: Write> Game<R, W> {
     fn handle_input_event(&mut self, input_event: InputEvent) -> ResultEvent {
         match input_event {
             InputEvent::PlayerMove(_) => self.level.player.take_turn(&self.level.maze, input_event),
+            InputEvent::PlayerCreateBomb => self.level.player.put_bomb(&mut self.level.bombs, input_event),
             InputEvent::GameQuit => ResultEvent::GameExit,
             InputEvent::GamePause => ResultEvent::GamePause,
         }
@@ -170,6 +171,12 @@ impl<R: Read, W: Write> Game<R, W> {
                 &self.level.player,
                 game_event,
             ),
+            GameEvent::BombExplode { id } => {
+                match self.level.bombs.get(id).unwrap() {
+                    Some(bomb) => bomb.take_turn(game_event),
+                    _ => ResultEvent::DoNothing,
+                }
+            }
         }
     }
 
@@ -197,6 +204,14 @@ impl<R: Read, W: Write> Game<R, W> {
             }
             ResultEvent::EnemyCheckCollision { id } => {
                 self.game_events.push_back(GameEvent::EnemyCheckCollision { id });
+            }
+            ResultEvent::BombCreated { id } => {
+                let game_event = GameEvent::BombExplode { id };
+                self.time_controller.schedule_event_in(3_000, game_event);
+            }
+            ResultEvent::BombExplode { id } => {
+                // Discard bomb at exploding time.
+                self.level.bombs[id].take();
             }
             ResultEvent::EnemyDied { id } => unimplemented!(),
             ResultEvent::DoNothing => (),
@@ -249,6 +264,10 @@ impl<R: Read, W: Write> Game<R, W> {
 
         // Draw the maze.
         self.output_controller.draw_maze(&self.level.maze);
+
+        // Draw the bombs.
+        self.output_controller
+            .draw_optional_game_elements(&self.level.bombs);
 
         // Draw the player.
         self.output_controller.draw_game_element(&self.level.player);

@@ -5,6 +5,7 @@ use std::time::{Duration, Instant};
 
 /// A `Timeout` wraps an `GameEvent` which shall be executed
 /// after a period of time.
+#[derive(Debug)]
 struct Timeout {
     /// The `creation_time` is the instant in which the timeout was created.
     creation_time: Instant,
@@ -54,32 +55,23 @@ impl PartialEq for Timeout {
 impl Eq for Timeout {}
 
 impl PartialOrd for Timeout {
-    /// The partial order of two `Timeout` is equivalent to the
+    /// The partial order of two `Timeout` is the opposite of the
     /// partial order of their `expiration_time`.
     fn partial_cmp(&self, other: &Timeout) -> Option<Ordering> {
-        self.expiration_time().partial_cmp(&other.expiration_time())
+        other.expiration_time().partial_cmp(&self.expiration_time())
     }
 }
 
 impl Ord for Timeout {
-    /// The order of two `Timeout` is opposite to their partial order,
-    /// this is a workaround to order them in a priority queue.
+    /// The order of two `Timeout` is equivalent to its partial order of their `expiration_time`.
     fn cmp(&self, other: &Timeout) -> Ordering {
-        let ord = self
-            .expiration_time()
-            .partial_cmp(&other.expiration_time())
-            .unwrap();
-
-        match ord {
-            Ordering::Greater => Ordering::Less,
-            Ordering::Less => Ordering::Greater,
-            Ordering::Equal => ord,
-        }
+        self.partial_cmp(&other).unwrap()
     }
 }
 
 /// The `TimeController` manages the events that shall be run in a period
 /// of time in the futuer.
+#[derive(Debug)]
 pub struct TimeController {
     /// The `scheduled_events` is a priority queue, which pop always the
     /// the timeout with sooner expiration date. It stores the timeouts to
