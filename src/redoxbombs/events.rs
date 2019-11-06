@@ -1,7 +1,7 @@
 use game_element::Bomb;
 
 /// An `InputEvent` is an event produced as a consequence
-/// of a user input. 
+/// of a user input.
 #[derive(Debug)]
 pub enum InputEvent {
     /// Move the player towards `direction`.
@@ -21,7 +21,7 @@ pub enum InputEvent {
 /// their elements to handle requests in a RoundRobin way.
 #[derive(Debug)]
 pub enum GameEvent {
-    /// Allow enemy with number `id` to check collision 
+    /// Allow enemy with number `id` to check collision
     /// with other game elements.
     EnemyCheckCollision { id: usize },
 

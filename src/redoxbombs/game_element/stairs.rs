@@ -26,8 +26,7 @@ impl Stairs {
         Self { position }
     }
 
-    /// Take a turn given a game event and return a result event as a
-    /// result.
+    /// Handle an `InputEvent` and create the correspondant `ResultEvent`.
     pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: GameEvent) -> ResultEvent {
         match event {
             GameEvent::StairsRelease if player.get_position() == self.get_position() => {
