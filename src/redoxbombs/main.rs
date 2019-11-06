@@ -145,8 +145,7 @@ impl<R: Read, W: Write> Game<R, W> {
     /// of the current level.
     fn handle_input_event(&mut self, input_event: InputEvent) -> ResultEvent {
         match input_event {
-            InputEvent::PlayerMove(_) => self.level.player.take_turn(&self.level.maze, input_event),
-            InputEvent::PlayerCreateBomb => self.level.player.put_bomb(&mut self.level.bombs, input_event),
+            InputEvent::PlayerMove(_) | InputEvent::PlayerCreateBomb => self.level.player.take_turn(&self.level.maze, input_event),
             InputEvent::GameQuit => ResultEvent::GameExit,
             InputEvent::GamePause => ResultEvent::GamePause,
         }
@@ -205,7 +204,11 @@ impl<R: Read, W: Write> Game<R, W> {
             ResultEvent::EnemyCheckCollision { id } => {
                 self.game_events.push_back(GameEvent::EnemyCheckCollision { id });
             }
-            ResultEvent::BombCreated { id } => {
+            ResultEvent::BombCreated { bomb } => {
+                // Add bomb to the level and get its id.
+                let id = self.level.add_bomb(bomb);
+
+                // Create a GameEvent to explode and schedule it.
                 let game_event = GameEvent::BombExplode { id };
                 self.time_controller.schedule_event_in(3_000, game_event);
             }

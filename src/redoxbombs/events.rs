@@ -1,3 +1,5 @@
+use game_element::Bomb;
+
 /// An `InputEvent` is an event produced as a consequence
 /// of a user input. 
 #[derive(Debug)]
@@ -61,7 +63,7 @@ pub enum ResultEvent {
     EnemyBlock { id: usize },
 
     /// Explode the bomb.
-    BombCreated { id: usize },
+    BombCreated { bomb: Bomb },
 
     /// Explode the bomb.
     BombExplode { id: usize },

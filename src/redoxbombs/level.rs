@@ -101,4 +101,15 @@ impl Level {
     pub fn get_index(&self) -> usize {
         self.index
     }
+
+    /// Add a bomb to the level and return the bomb id.
+    pub fn add_bomb(&mut self, bomb: Bomb) -> usize {
+        // Add the bomb to the vector.
+        let bomb = Some(bomb);
+        self.bombs.push(bomb);
+
+        // The bomb id is its position in the vector.
+        let id = self.bombs.len() - 1;
+        id
+    }
 }
