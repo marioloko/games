@@ -18,6 +18,7 @@ use std::time::Duration;
 /// Milliseconds to sleep when paused to reduce the CPU usage
 /// due to busy waiting.
 const PAUSE_SLEEP_MILLIS: u64 = 300;
+const REFRESH_TIME: u64 = 30;
 
 /// The `GameMode` defines the state of the game.
 enum GameMode {
@@ -135,7 +136,7 @@ impl<R: Read, W: Write> Game<R, W> {
             self.handle_pause();
 
             // Avoid inmediate redrawing of the maze.
-            thread::sleep(Duration::from_millis(20));
+            thread::sleep(Duration::from_millis(REFRESH_TIME));
             self.render();
         }
     }
