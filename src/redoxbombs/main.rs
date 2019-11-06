@@ -159,12 +159,14 @@ impl<R: Read, W: Write> Game<R, W> {
     /// of the current level.
     fn handle_game_event(&mut self, game_event: GameEvent) -> ResultEvent {
         match game_event {
-            GameEvent::EnemyRelease { id } | GameEvent::EnemyCheckCollision { id } => self
-                .level
-                .enemies
-                .get_mut(id)
-                .unwrap()
-                .take_turn(&self.level.player, &self.level.maze, game_event),
+            GameEvent::EnemyRelease { id } | GameEvent::EnemyCheckCollision { id } => {
+                match self.level.enemies.get_mut(id) {
+                    Some(Some(enemy)) => {
+                        enemy.take_turn(&self.level.player, &self.level.maze, game_event)
+                    }
+                    _ => ResultEvent::DoNothing,
+                }
+            }
             GameEvent::StairsRelease => {
                 self.level
                     .stairs
@@ -276,7 +278,7 @@ impl<R: Read, W: Write> Game<R, W> {
 
         // Draw the enemies.
         self.output_controller
-            .draw_game_elements(&self.level.enemies);
+            .draw_optional_game_elements(&self.level.enemies);
 
         // Draw the stairs.
         self.output_controller.draw_game_element(&self.level.stairs);

@@ -35,7 +35,7 @@ pub struct Level {
     pub player: Player,
 
     /// The set of enemies during this level.
-    pub enemies: Vec<Enemy>,
+    pub enemies: Vec<Option<Enemy>>,
 
     /// The stairs to go to the next level.
     pub stairs: Stairs,
@@ -81,8 +81,12 @@ impl Level {
         // Load the different game elements using the parser.
         let loader = GameElementsLoader::new(raw_level.game_elements);
         let player = loader.generate_player();
-        let enemies = loader.generate_enemies();
         let stairs = loader.generate_stairs();
+        let enemies = loader
+            .generate_enemies()
+            .into_iter()
+            .map(|enemy| Some(enemy))
+            .collect();
         let bombs = Vec::new();
 
         let level = Level {
