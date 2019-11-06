@@ -30,8 +30,9 @@ impl Stairs {
     /// result.
     pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: GameEvent) -> ResultEvent {
         match event {
-            GameEvent::StairsRelease 
-                if player.get_position() == self.get_position() => ResultEvent::NextLevel,
+            GameEvent::StairsRelease if player.get_position() == self.get_position() => {
+                ResultEvent::NextLevel
+            }
             _ => ResultEvent::StairsBlock,
         }
     }

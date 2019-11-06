@@ -26,24 +26,18 @@ impl Enemy {
         Self { position }
     }
 
-    /// Take a turn given an input event and return a result event as a result.
+    /// Handle a game event comming to the player.
     pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: GameEvent) -> ResultEvent {
-        let result_event = match event {
-            GameEvent::EnemyRelease { id } => ResultEvent::EnemyBlock { id },
-            _ => return ResultEvent::DoNothing,
-        };
-
-        // Move the enemy towards the next non-blocked position closer to the player.
-        self.move_towards(player, maze);
-
-        result_event
-    }
-
-    /// Checks if the enemy and the player has collided, and if so, kill the player.
-    pub fn check_collision(&mut self, player: &Player, game_event: GameEvent) -> ResultEvent {
-        match game_event {
+        match event {
+            GameEvent::EnemyRelease { id } => {
+                self.move_towards(player, maze);
+                ResultEvent::EnemyBlock { id }
+            }
             GameEvent::EnemyCheckCollision { id }
-                if self.get_position() == player.get_position() => ResultEvent::PlayerDied,
+                if self.get_position() == player.get_position() =>
+            {
+                ResultEvent::PlayerDied
+            }
             GameEvent::EnemyCheckCollision { id } => ResultEvent::EnemyCheckCollision { id },
             _ => ResultEvent::DoNothing,
         }

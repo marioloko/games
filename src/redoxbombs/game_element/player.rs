@@ -1,7 +1,7 @@
 use events::{Direction, InputEvent, ResultEvent};
+use game_element::Bomb;
 use game_element::Coordinates;
 use game_element::GameElement;
-use game_element::Bomb;
 use maze::Maze;
 
 /// Represent the Player.
@@ -28,14 +28,20 @@ impl Player {
     /// Handle the player `InputEvent` and produce the appropriated `ResultEvent`.
     pub fn take_turn(&mut self, maze: &Maze, event: InputEvent) -> ResultEvent {
         match event {
-            InputEvent::PlayerMove(dir) => self.move_player(maze, dir),
-            InputEvent::PlayerCreateBomb => self.put_bomb(),
+            InputEvent::PlayerMove(dir) => {
+                self.move_player(maze, dir);
+                ResultEvent::DoNothing
+            }
+            InputEvent::PlayerCreateBomb => {
+                let bomb = self.put_bomb();
+                ResultEvent::BombCreated { bomb }
+            }
             _ => ResultEvent::DoNothing,
         }
     }
 
     /// Move the player toward the given direction if the tile is not blocked.
-    fn move_player(&mut self, maze: &Maze, dir: Direction) -> ResultEvent {
+    fn move_player(&mut self, maze: &Maze, dir: Direction) {
         // Compute next position to move.
         let next_position = match dir {
             Direction::Up => self.position.up(),
@@ -48,19 +54,15 @@ impl Player {
         if !maze.is_blocked(next_position.x, next_position.y) {
             self.position = next_position;
         }
-
-        ResultEvent::DoNothing
     }
 
-    /// Generate a `ResultEvent` containing a bomb located at the 
+    /// Generate a `ResultEvent` containing a bomb located at the
     /// player position.
-    fn put_bomb(&self) -> ResultEvent {
+    fn put_bomb(&self) -> Bomb {
         let position = self.get_position();
         let (x, y) = (position.x, position.y);
 
-        let bomb = Bomb::new(x, y);
-
-        ResultEvent::BombCreated { bomb }
+        Bomb::new(x, y)
     }
 }
 

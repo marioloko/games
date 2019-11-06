@@ -7,10 +7,10 @@ mod game_element;
 mod level;
 mod maze;
 
-use std::collections::VecDeque;
 use controllers::{InputController, OutputController, TimeController};
-use events::{InputEvent, GameEvent, ResultEvent};
+use events::{GameEvent, InputEvent, ResultEvent};
 use level::Level;
+use std::collections::VecDeque;
 use std::io::{self, Read, Write};
 use std::thread;
 use std::time::Duration;
@@ -145,7 +145,9 @@ impl<R: Read, W: Write> Game<R, W> {
     /// of the current level.
     fn handle_input_event(&mut self, input_event: InputEvent) -> ResultEvent {
         match input_event {
-            InputEvent::PlayerMove(_) | InputEvent::PlayerCreateBomb => self.level.player.take_turn(&self.level.maze, input_event),
+            InputEvent::PlayerMove(_) | InputEvent::PlayerCreateBomb => {
+                self.level.player.take_turn(&self.level.maze, input_event)
+            }
             InputEvent::GameQuit => ResultEvent::GameExit,
             InputEvent::GamePause => ResultEvent::GamePause,
         }
@@ -156,26 +158,21 @@ impl<R: Read, W: Write> Game<R, W> {
     /// of the current level.
     fn handle_game_event(&mut self, game_event: GameEvent) -> ResultEvent {
         match game_event {
-            GameEvent::EnemyRelease { id } => self.level.enemies.get_mut(id).unwrap().take_turn(
-                &self.level.player,
-                &self.level.maze,
-                game_event,
-            ),
-            GameEvent::StairsRelease => self.level.stairs.take_turn(
-                &self.level.player, 
-                &self.level.maze,
-                game_event,
-            ),
-            GameEvent::EnemyCheckCollision { id } => self.level.enemies.get_mut(id).unwrap().check_collision(
-                &self.level.player,
-                game_event,
-            ),
-            GameEvent::BombExplode { id } => {
-                match self.level.bombs.get(id).unwrap() {
-                    Some(bomb) => bomb.take_turn(game_event),
-                    _ => ResultEvent::DoNothing,
-                }
+            GameEvent::EnemyRelease { id } | GameEvent::EnemyCheckCollision { id } => self
+                .level
+                .enemies
+                .get_mut(id)
+                .unwrap()
+                .take_turn(&self.level.player, &self.level.maze, game_event),
+            GameEvent::StairsRelease => {
+                self.level
+                    .stairs
+                    .take_turn(&self.level.player, &self.level.maze, game_event)
             }
+            GameEvent::BombExplode { id } => match self.level.bombs.get(id).unwrap() {
+                Some(bomb) => bomb.take_turn(game_event),
+                _ => ResultEvent::DoNothing,
+            },
         }
     }
 
@@ -202,7 +199,8 @@ impl<R: Read, W: Write> Game<R, W> {
                 self.game_events.push_back(GameEvent::StairsRelease);
             }
             ResultEvent::EnemyCheckCollision { id } => {
-                self.game_events.push_back(GameEvent::EnemyCheckCollision { id });
+                self.game_events
+                    .push_back(GameEvent::EnemyCheckCollision { id });
             }
             ResultEvent::BombCreated { bomb } => {
                 // Add bomb to the level and get its id.

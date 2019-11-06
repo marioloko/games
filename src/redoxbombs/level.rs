@@ -1,5 +1,5 @@
 use game_element::parser::GameElementsLoader;
-use game_element::{Enemy, Player, Stairs, Bomb};
+use game_element::{Bomb, Enemy, Player, Stairs};
 use maze::Maze;
 
 const MAP_1: &'static [u8] = include_bytes!("assets/levels/1/map.txt");
