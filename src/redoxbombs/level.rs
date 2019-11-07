@@ -82,11 +82,7 @@ impl Level {
         let loader = GameElementsLoader::new(raw_level.game_elements);
         let player = loader.generate_player();
         let stairs = loader.generate_stairs();
-        let enemies = loader
-            .generate_enemies()
-            .into_iter()
-            .map(|enemy| Some(enemy))
-            .collect();
+        let enemies = loader.generate_enemies().into_iter().map(Some).collect();
         let bombs = Vec::new();
 
         let level = Level {
