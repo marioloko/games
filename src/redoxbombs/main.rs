@@ -18,7 +18,7 @@ use std::time::Duration;
 /// Milliseconds to sleep when paused to reduce the CPU usage
 /// due to busy waiting.
 const PAUSE_SLEEP_MILLIS: u64 = 300;
-const REFRESH_TIME: u64 = 30;
+const REFRESH_TIME: u64 = 50;
 
 /// The `GameMode` defines the state of the game.
 enum GameMode {

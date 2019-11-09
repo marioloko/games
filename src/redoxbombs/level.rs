@@ -5,11 +5,17 @@ use maze::Maze;
 const MAP_1: &'static [u8] = include_bytes!("assets/levels/1/map.txt");
 const GAME_ELEMENTS_1: &'static str = include_str!("assets/levels/1/game_elements.txt");
 
+const MAP_2: &'static [u8] = include_bytes!("assets/levels/2/map.txt");
+const GAME_ELEMENTS_2: &'static str = include_str!("assets/levels/2/game_elements.txt");
+
 /// `RAW_LEVELS` contains the map and game element information to generate
 /// the different levels.
 const RAW_LEVELS: &'static [RawLevel] = &[RawLevel {
     map: MAP_1,
     game_elements: GAME_ELEMENTS_1,
+}, RawLevel {
+    map: MAP_2,
+    game_elements: GAME_ELEMENTS_2,
 }];
 
 /// A `RawLevel` stores the map and game elements information needed
