@@ -5,3 +5,4 @@ Enemy     10   7
 Enemy      1   7
 Enemy      2   7
 Stairs    20   7
+Bomb       1   1

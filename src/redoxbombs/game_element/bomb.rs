@@ -27,6 +27,7 @@ impl Bomb {
     pub fn take_turn(&self, event: GameEvent) -> ResultEvent {
         match event {
             GameEvent::BombExplode { id } => ResultEvent::BombExplode { id },
+            GameEvent::BombInit { id } => ResultEvent::BombInit { id },
             _ => ResultEvent::DoNothing,
         }
     }

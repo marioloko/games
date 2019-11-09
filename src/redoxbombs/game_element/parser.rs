@@ -1,4 +1,4 @@
-use game_element::{Enemy, Player, Stairs};
+use game_element::{Bomb, Enemy, Player, Stairs};
 use std::collections::HashMap;
 
 /// A `GameElementsLoader` is a game elements parser. It holds the information
@@ -105,6 +105,38 @@ impl<'a> GameElementsLoader<'a> {
                 let y = extract_y_arg(args, Enemy::NAME);
 
                 Enemy::new(x, y)
+            })
+            .collect()
+    }
+
+    /// Generate `Vec<Bomb>` from the information gathered from the config string
+    /// literal. A `Bomb`definition consists on the name of the bomb followed by
+    /// its x and y coordinates as integer.
+    ///
+    /// Ex: `Enemy 1 2`, where `x = 1` and `y = 2`.
+    ///
+    ///
+    /// returns: 0 or more `Bomb` objects.
+    ///
+    /// panics:
+    /// - This method panics if any enemy `x` coordinate is not and integer.
+    /// - This method panics if any enemy `y` coordinate is not and integer.
+    pub fn generate_bombs(&self) -> Vec<Bomb> {
+        let bombs = self.game_elements.get(Bomb::NAME);
+
+        let bombs = match bombs {
+            None => return Vec::new(),
+            Some(bombs) => bombs,
+        };
+
+        bombs
+            .iter()
+            .map(|args| {
+                let x = extract_x_arg(args, Bomb::NAME);
+
+                let y = extract_y_arg(args, Bomb::NAME);
+
+                Bomb::new(x, y)
             })
             .collect()
     }

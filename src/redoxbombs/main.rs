@@ -75,7 +75,7 @@ impl<R: Read, W: Write> Game<R, W> {
 
         // Initialize the basic game events to allow game elements to take
         // first turn.
-        let game_events = Self::generate_init_game_events(&level);
+        let game_events = generate_init_game_events(&level);
 
         // At the beginning there is no result event.
         let result_events = VecDeque::new();
@@ -172,10 +172,12 @@ impl<R: Read, W: Write> Game<R, W> {
                     .stairs
                     .take_turn(&self.level.player, &self.level.maze, game_event)
             }
-            GameEvent::BombExplode { id } => match self.level.bombs.get(id).unwrap() {
-                Some(bomb) => bomb.take_turn(game_event),
-                _ => ResultEvent::DoNothing,
-            },
+            GameEvent::BombExplode { id } | GameEvent::BombInit { id } => {
+                match self.level.bombs.get(id).unwrap() {
+                    Some(bomb) => bomb.take_turn(game_event),
+                    _ => ResultEvent::DoNothing,
+                }
+            }
         }
     }
 
@@ -204,6 +206,11 @@ impl<R: Read, W: Write> Game<R, W> {
             ResultEvent::EnemyCheckCollision { id } => {
                 self.game_events
                     .push_back(GameEvent::EnemyCheckCollision { id });
+            }
+            ResultEvent::BombInit { id } => {
+                // Create a GameEvent to explode and schedule it.
+                let game_event = GameEvent::BombExplode { id };
+                self.time_controller.schedule_event_in(3_000, game_event);
             }
             ResultEvent::BombCreated { bomb } => {
                 // Add bomb to the level and get its id.
@@ -245,23 +252,6 @@ impl<R: Read, W: Write> Game<R, W> {
         }
     }
 
-    /// Gnerate the initial events to wake up every `GameElement` at least once.
-    fn generate_init_game_events(level: &Level) -> VecDeque<GameEvent> {
-        let mut game_events = VecDeque::new();
-
-        // Generate basic enemy game events.
-        for (id, _) in level.enemies.iter().enumerate() {
-            game_events.push_back(GameEvent::EnemyRelease { id });
-            game_events.push_back(GameEvent::EnemyCheckCollision { id });
-        }
-
-        // Generate a release event for stairs to force it to take turn at least
-        // once.
-        game_events.push_back(GameEvent::StairsRelease);
-
-        game_events
-    }
-
     /// Render the maze and the game elements on the screen.
     fn render(&mut self) {
         self.output_controller.clear();
@@ -285,6 +275,29 @@ impl<R: Read, W: Write> Game<R, W> {
 
         self.output_controller.render();
     }
+}
+
+/// Gnerate the initial events to wake up every `GameElement` at least once.
+/// Gnerate the initial events to wake up every `GameElement` at least once.
+fn generate_init_game_events(level: &Level) -> VecDeque<GameEvent> {
+    let mut game_events = VecDeque::new();
+
+    // Generate basic enemy game events.
+    for (id, _) in level.enemies.iter().enumerate() {
+        game_events.push_back(GameEvent::EnemyRelease { id });
+        game_events.push_back(GameEvent::EnemyCheckCollision { id });
+    }
+
+    // Generate initialization game events for bombs.
+    for (id, _) in level.bombs.iter().enumerate() {
+        game_events.push_back(GameEvent::BombInit { id });
+    }
+
+    // Generate a release event for stairs to force it to take turn at least
+    // once.
+    game_events.push_back(GameEvent::StairsRelease);
+
+    game_events
 }
 
 impl<R: Read, W: Write> Drop for Game<R, W> {

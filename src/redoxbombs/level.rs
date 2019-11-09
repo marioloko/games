@@ -83,7 +83,7 @@ impl Level {
         let player = loader.generate_player();
         let stairs = loader.generate_stairs();
         let enemies = loader.generate_enemies().into_iter().map(Some).collect();
-        let bombs = Vec::new();
+        let bombs = loader.generate_bombs().into_iter().map(Some).collect();
 
         let level = Level {
             index,

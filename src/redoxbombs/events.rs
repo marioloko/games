@@ -28,6 +28,9 @@ pub enum GameEvent {
     /// Allow enemy with number `id` to move.
     EnemyRelease { id: usize },
 
+    /// Initialize already created bomb.
+    BombInit { id: usize },
+
     /// Set a bomb to explode.
     BombExplode { id: usize },
 
@@ -62,8 +65,11 @@ pub enum ResultEvent {
     /// Do not allow enemy with `id` to move.
     EnemyBlock { id: usize },
 
-    /// Explode the bomb.
+    /// Include bomb to level and schedule it to explode.
     BombCreated { bomb: Bomb },
+
+    /// Schedule to explode an existing bomb.
+    BombInit { id: usize },
 
     /// Explode the bomb.
     BombExplode { id: usize },
