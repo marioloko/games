@@ -22,6 +22,7 @@ impl<W: Write> OutputController<W> {
     /// panics:
     /// - If output cannot be converted to `RawTerminal`.
     pub fn new(output: W) -> OutputController<W> {
+        // Convert standard output to raw terminal.
         let output = output
             .into_raw_mode()
             .expect("OutputController cannot convert its output to raw mode.");
@@ -48,6 +49,24 @@ impl<W: Write> OutputController<W> {
         )
         .expect("OutputController cannot clear output");
     }
+
+    /// Remove a game element.
+    ///
+    /// panics:
+    /// - If it is not possible to clear the screen.
+    pub fn clear_game_element(&mut self, game_element: &impl GameElement) {
+        let position = game_element.get_position();
+        let x = 1 + position.x as u16;
+        let y = 1 + position.y as u16;
+
+        write!(
+            self.output,
+            "{cursor} ",
+            cursor = cursor::Goto(x, y),
+        )   
+        .expect("OutputController cannot clear game element.");
+    }
+
 
     /// Draw the maze using the output. (But it is not render on
     /// the screen until `render` is called).

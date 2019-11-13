@@ -61,6 +61,9 @@ struct Game<R: Read, W: Write> {
 
     /// The meta status of the game.
     game_mode: GameMode,
+
+    /// Whether is necessary or not to render all elements.
+    full_render_needed: bool
 }
 
 impl<R: Read, W: Write> Game<R, W> {
@@ -86,6 +89,9 @@ impl<R: Read, W: Write> Game<R, W> {
         // The game is running by default.
         let game_mode = GameMode::Running;
 
+        // At the beggining a full render is necessary.
+        let full_render_needed = false;
+
         Game {
             input_controller,
             output_controller,
@@ -95,12 +101,14 @@ impl<R: Read, W: Write> Game<R, W> {
             result_events,
             time_controller,
             game_mode,
+            full_render_needed,
         }
     }
 
     /// Start the main game loop.
     fn start(&mut self) {
-        self.render();
+        // Render the game elements.
+        self.full_render();
 
         while let GameMode::Running = self.game_mode {
             // Read one input event.
@@ -137,7 +145,15 @@ impl<R: Read, W: Write> Game<R, W> {
 
             // Avoid inmediate redrawing of the maze.
             thread::sleep(Duration::from_millis(REFRESH_TIME));
-            self.render();
+
+            // If full render is needed then render the map and all its
+            // elements.
+            if self.full_render_needed {
+                self.full_render();
+                self.full_render_needed = false;
+            } else {
+                self.output_controller.render();
+            }
         }
     }
 
@@ -146,9 +162,18 @@ impl<R: Read, W: Write> Game<R, W> {
     /// of the current level.
     fn handle_input_event(&mut self, input_event: InputEvent) -> ResultEvent {
         match input_event {
-            InputEvent::PlayerMove(_) | InputEvent::PlayerCreateBomb => {
-                self.level.player.take_turn(&self.level.maze, input_event)
+            InputEvent::PlayerMove(_) => {
+                // Clear player before moving.
+                self.output_controller.clear_game_element(&self.level.player);
+
+                // Move player.
+                let event = self.level.player.take_turn(&self.level.maze, input_event);
+
+                // Draw player after moving.
+                self.output_controller.draw_game_element(&self.level.player);
+                event
             }
+            InputEvent::PlayerCreateBomb => self.level.player.take_turn(&self.level.maze, input_event),
             InputEvent::GameQuit => ResultEvent::GameExit,
             InputEvent::GamePause => ResultEvent::GamePause,
         }
@@ -159,11 +184,26 @@ impl<R: Read, W: Write> Game<R, W> {
     /// of the current level.
     fn handle_game_event(&mut self, game_event: GameEvent) -> ResultEvent {
         match game_event {
-            GameEvent::EnemyRelease { id } | GameEvent::EnemyCheckCollision { id } => {
-                match self.level.enemies.get_mut(id) {
-                    Some(Some(enemy)) => {
-                        enemy.take_turn(&self.level.player, &self.level.maze, game_event)
+            GameEvent::EnemyRelease { id } => {
+                match self.level.enemies.get_mut(id).unwrap_or(&mut None) {
+                    Some(enemy) => {
+                        // Clear enemy before moving.
+                        self.output_controller.clear_game_element(enemy);
+
+                        // Move enemy.
+                        let event = enemy.take_turn(&self.level.player, &self.level.maze, game_event);
+
+                        // Redraw enemy after moving.
+                        self.output_controller.draw_game_element(enemy);
+
+                        event
                     }
+                    _ => ResultEvent::DoNothing,
+                }
+            }
+            GameEvent::EnemyCheckCollision { id } => {
+                match self.level.enemies.get_mut(id).unwrap_or(&mut None) {
+                    Some(enemy) => enemy.take_turn(&self.level.player, &self.level.maze, game_event),
                     _ => ResultEvent::DoNothing,
                 }
             }
@@ -193,6 +233,9 @@ impl<R: Read, W: Write> Game<R, W> {
                 let next_level = self.level.next().expect("There is no next level.");
 
                 self.level = next_level;
+
+                // Draw again the map.
+                self.full_render_needed = true;
             }
             ResultEvent::PlayerDied | ResultEvent::GameExit => {
                 self.game_mode = GameMode::Ended;
@@ -211,6 +254,11 @@ impl<R: Read, W: Write> Game<R, W> {
                 // Create a GameEvent to explode and schedule it.
                 let game_event = GameEvent::BombExplode { id };
                 self.time_controller.schedule_event_in(3_000, game_event);
+
+                // Draw initialized bomb.
+                if let Some(bomb) = self.level.bombs.get(id).unwrap_or(&None) {
+                    self.output_controller.draw_game_element(bomb);
+                }
             }
             ResultEvent::BombCreated { bomb } => {
                 // Add bomb to the level and get its id.
@@ -219,10 +267,18 @@ impl<R: Read, W: Write> Game<R, W> {
                 // Create a GameEvent to explode and schedule it.
                 let game_event = GameEvent::BombExplode { id };
                 self.time_controller.schedule_event_in(3_000, game_event);
+
+                // Draw created bomb.
+                if let Some(bomb) = self.level.bombs.get(id).unwrap_or(&None) {
+                    self.output_controller.draw_game_element(bomb);
+                }
             }
             ResultEvent::BombExplode { id } => {
                 // Discard bomb at exploding time.
-                self.level.bombs[id].take();
+                if let Some(bomb) = self.level.bombs[id].take() {
+                    // Clear the bomb from the screen.
+                    self.output_controller.clear_game_element(&bomb);
+                }
             }
             ResultEvent::EnemyDied { id } => unimplemented!(),
             ResultEvent::DoNothing => (),
@@ -252,12 +308,15 @@ impl<R: Read, W: Write> Game<R, W> {
         }
     }
 
-    /// Render the maze and the game elements on the screen.
-    fn render(&mut self) {
+    /// Render the maze and all the game elements on the screen.
+    fn full_render(&mut self) {
         self.output_controller.clear();
 
         // Draw the maze.
         self.output_controller.draw_maze(&self.level.maze);
+
+        // Draw the stairs.
+        self.output_controller.draw_game_element(&self.level.stairs);
 
         // Draw the bombs.
         self.output_controller
@@ -269,9 +328,6 @@ impl<R: Read, W: Write> Game<R, W> {
         // Draw the enemies.
         self.output_controller
             .draw_optional_game_elements(&self.level.enemies);
-
-        // Draw the stairs.
-        self.output_controller.draw_game_element(&self.level.stairs);
 
         self.output_controller.render();
     }
