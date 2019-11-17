@@ -1,4 +1,5 @@
 use game_element::Bomb;
+use game_element::Fire;
 
 /// An `InputEvent` is an event produced as a consequence
 /// of a user input.
@@ -21,7 +22,7 @@ pub enum InputEvent {
 /// their elements to handle requests in a RoundRobin way.
 #[derive(Debug)]
 pub enum GameEvent {
-    /// Allow enemy with number `id` to check collision
+    /// Allow enemy with identifier `id` to check collision
     /// with other game elements.
     EnemyCheckCollision { id: usize },
 
@@ -33,6 +34,16 @@ pub enum GameEvent {
 
     /// Set a bomb to explode.
     BombExplode { id: usize },
+
+    /// Set the fire to burn.
+    FireInit { id: usize }, 
+
+    /// Allow fire with identifier `id` to check collision
+    /// with other game elements.
+    FireCheckCollision { id: usize },
+
+    /// Put the fire out.
+    FirePutOut { id: usize },
 
     /// Allow a `Stairs` object to take a turn.
     StairsRelease,
@@ -71,8 +82,14 @@ pub enum ResultEvent {
     /// Schedule to explode an existing bomb.
     BombInit { id: usize },
 
-    /// Explode the bomb.
-    BombExplode { id: usize },
+    /// Explode the bomb creating the corresponding fires.
+    BombExplode { id: usize, fires: Vec<Fire> },
+
+    /// Put out the fire.
+    FirePutOut { id: usize },
+
+    /// Allow fire to check collision with other game elements.
+    FireCheckCollision { id: usize },
 
     /// Do not allow stairs to take turn.
     StairsBlock,

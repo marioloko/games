@@ -207,6 +207,26 @@ impl<R: Read, W: Write> Game<R, W> {
                     _ => ResultEvent::DoNothing,
                 }
             }
+            GameEvent::FireCheckCollision { id } | GameEvent::FirePutOut { id } => {
+                match self.level.fires.get_mut(id).unwrap_or(&mut None) {
+                    Some(fire) => {
+                        fire.take_turn(game_event)
+                    }
+                    _ => ResultEvent::DoNothing,
+                }
+            }
+            GameEvent::FireInit { id } => {
+                match self.level.fires.get_mut(id).unwrap_or(&mut None) {
+                    Some(fire) => {
+                        // Draw the fire in the maze.
+                        self.output_controller.draw_game_element(fire);
+
+                        // Start checking collisions.
+                        fire.take_turn(game_event)
+                    }
+                    _ => ResultEvent::DoNothing,
+                }
+            }
             GameEvent::StairsRelease => {
                 self.level
                     .stairs
@@ -230,8 +250,8 @@ impl<R: Read, W: Write> Game<R, W> {
                 self.time_controller.schedule_event_in(500, game_event);
             }
             ResultEvent::NextLevel => {
+                // Update the level to the next one.
                 let next_level = self.level.next().expect("There is no next level.");
-
                 self.level = next_level;
 
                 // Draw again the map.
@@ -253,7 +273,7 @@ impl<R: Read, W: Write> Game<R, W> {
             ResultEvent::BombInit { id } => {
                 // Create a GameEvent to explode and schedule it.
                 let game_event = GameEvent::BombExplode { id };
-                self.time_controller.schedule_event_in(3_000, game_event);
+                self.time_controller.schedule_event_in(1_000, game_event);
 
                 // Draw initialized bomb.
                 if let Some(bomb) = self.level.bombs.get(id).unwrap_or(&None) {
@@ -273,11 +293,44 @@ impl<R: Read, W: Write> Game<R, W> {
                     self.output_controller.draw_game_element(bomb);
                 }
             }
-            ResultEvent::BombExplode { id } => {
+            ResultEvent::BombExplode { id, fires } => {
                 // Discard bomb at exploding time.
                 if let Some(bomb) = self.level.bombs[id].take() {
                     // Clear the bomb from the screen.
                     self.output_controller.clear_game_element(&bomb);
+                }
+
+                // Create an init event for every fire.
+                for fire in fires {
+                    // Compute the scheduling time for the fire.
+                    let start_after = fire.start_after();
+                    let duration = start_after + fire.duration();
+
+                    // Insert the fire and get its id.
+                    let id = self.level.add_fire(fire);
+
+                    let event = GameEvent::FireInit { id };
+                    self.time_controller.schedule_event_in(
+                        start_after as u64,
+                        event
+                    );
+
+                    let event = GameEvent::FirePutOut { id };
+                    self.time_controller.schedule_event_in(
+                        duration as u64,
+                        event
+                    );
+                }
+            }
+            ResultEvent::FireCheckCollision { id } => {
+                self.game_events
+                    .push_back(GameEvent::FireCheckCollision { id });
+            }
+            ResultEvent::FirePutOut { id } => {
+                // Discard the fire
+                if let Some(fire) = self.level.fires[id].take() {
+                    // Clear the fire from the screen.
+                    self.output_controller.clear_game_element(&fire);
                 }
             }
             ResultEvent::EnemyDied { id } => unimplemented!(),
@@ -328,6 +381,10 @@ impl<R: Read, W: Write> Game<R, W> {
         // Draw the enemies.
         self.output_controller
             .draw_optional_game_elements(&self.level.enemies);
+
+        // Draw the fires.
+        self.output_controller
+            .draw_optional_game_elements(&self.level.fires);
 
         self.output_controller.render();
     }

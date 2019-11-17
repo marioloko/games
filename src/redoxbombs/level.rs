@@ -1,5 +1,5 @@
 use game_element::parser::GameElementsLoader;
-use game_element::{Bomb, Enemy, Player, Stairs};
+use game_element::{Bomb, Enemy, Player, Stairs, Fire};
 use maze::Maze;
 
 const MAP_1: &'static [u8] = include_bytes!("assets/levels/1/map.txt");
@@ -48,6 +48,9 @@ pub struct Level {
 
     /// Bombs in the `Maze`.
     pub bombs: Vec<Option<Bomb>>,
+
+    /// Fires in the `Maze`.
+    pub fires: Vec<Option<Fire>>,
 }
 
 impl Level {
@@ -90,6 +93,7 @@ impl Level {
         let stairs = loader.generate_stairs();
         let enemies = loader.generate_enemies().into_iter().map(Some).collect();
         let bombs = loader.generate_bombs().into_iter().map(Some).collect();
+        let fires = Vec::new();
 
         let level = Level {
             index,
@@ -98,6 +102,7 @@ impl Level {
             enemies,
             stairs,
             bombs,
+            fires,
         };
 
         Some(level)
@@ -116,6 +121,17 @@ impl Level {
 
         // The bomb id is its position in the vector.
         let id = self.bombs.len() - 1;
+        id
+    }
+
+    /// Add a fire to the level and return the fire id.
+    pub fn add_fire(&mut self, fire: Fire) -> usize {
+        // Add the bomb to the vector.
+        let fire = Some(fire);
+        self.fires.push(fire);
+
+        // The bomb id is its position in the vector.
+        let id = self.fires.len() - 1;
         id
     }
 }

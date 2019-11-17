@@ -67,9 +67,10 @@ impl Coordinates {
 
     /// Compute the `Coordinate` above the current one.
     pub fn up(&self) -> Coordinates {
+        let new_y = if self.y > 0 { self.y - 1 } else { self.y };
         Coordinates {
             x: self.x,
-            y: self.y - 1,
+            y: new_y,
         }
     }
 
@@ -83,8 +84,9 @@ impl Coordinates {
 
     /// Compute the `Coordinate` at the left of the current one.
     pub fn left(&self) -> Coordinates {
+        let new_x = if self.x > 0 { self.x - 1 } else { self.x };
         Coordinates {
-            x: self.x - 1,
+            x: new_x,
             y: self.y,
         }
     }
