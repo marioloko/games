@@ -8,6 +8,9 @@ const GAME_ELEMENTS_1: &'static str = include_str!("assets/levels/1/game_element
 const MAP_2: &'static [u8] = include_bytes!("assets/levels/2/map.txt");
 const GAME_ELEMENTS_2: &'static str = include_str!("assets/levels/2/game_elements.txt");
 
+const MAP_3: &'static [u8] = include_bytes!("assets/levels/3/map.txt");
+const GAME_ELEMENTS_3: &'static str = include_str!("assets/levels/3/game_elements.txt");
+
 /// `RAW_LEVELS` contains the map and game element information to generate
 /// the different levels.
 const RAW_LEVELS: &'static [RawLevel] = &[RawLevel {
