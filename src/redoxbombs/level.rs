@@ -1,25 +1,28 @@
 use game_element::parser::GameElementsLoader;
-use game_element::{Bomb, Enemy, Player, Stairs, Fire};
+use game_element::{Bomb, Enemy, Fire, Player, Stairs};
 use maze::Maze;
 
-const MAP_1: &'static [u8] = include_bytes!("assets/levels/1/map.txt");
-const GAME_ELEMENTS_1: &'static str = include_str!("assets/levels/1/game_elements.txt");
+/// Generates a RawLevel with the assets under `assets/levels/${level}`.
+///
+/// level: is the level under `assets/levels/` we want to include.
+/// return a `RawLevel` including the information under its assets directory.
+macro_rules! include_raw_level {
+    ( $level:expr ) => {{
+        let map = include_bytes!(concat!("assets/levels/", $level, "/map.txt"));
+        let game_elements = include_str!(concat!("assets/levels/", $level, "/game_elements.txt"));
+        let raw_level = RawLevel { map, game_elements };
 
-const MAP_2: &'static [u8] = include_bytes!("assets/levels/2/map.txt");
-const GAME_ELEMENTS_2: &'static str = include_str!("assets/levels/2/game_elements.txt");
-
-const MAP_3: &'static [u8] = include_bytes!("assets/levels/3/map.txt");
-const GAME_ELEMENTS_3: &'static str = include_str!("assets/levels/3/game_elements.txt");
+        raw_level
+    }};
+}
 
 /// `RAW_LEVELS` contains the map and game element information to generate
 /// the different levels.
-const RAW_LEVELS: &'static [RawLevel] = &[RawLevel {
-    map: MAP_1,
-    game_elements: GAME_ELEMENTS_1,
-}, RawLevel {
-    map: MAP_2,
-    game_elements: GAME_ELEMENTS_2,
-}];
+const RAW_LEVELS: &'static [RawLevel] = &[
+    include_raw_level!("1"),
+    include_raw_level!("2"),
+    include_raw_level!("3"),
+];
 
 /// A `RawLevel` stores the map and game elements information needed
 /// to generate a level.
