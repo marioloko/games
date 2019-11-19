@@ -22,6 +22,9 @@ pub enum InputEvent {
 /// their elements to handle requests in a RoundRobin way.
 #[derive(Debug)]
 pub enum GameEvent {
+    /// Initializes a new enemy creating the needed events.
+    EnemyInit { id: usize },
+
     /// Allow enemy with identifier `id` to check collision
     /// with other game elements.
     EnemyCheckCollision { id: usize },

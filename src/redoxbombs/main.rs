@@ -203,7 +203,7 @@ impl<R: Read, W: Write> Game<R, W> {
                     _ => (),
                 }
             }
-            GameEvent::EnemyCheckCollision { id } => {
+            GameEvent::EnemyCheckCollision { id } | GameEvent::EnemyInit { id } => {
                 match self.level.enemies.get_mut(id).unwrap_or(&mut None) {
                     Some(enemy) => {
                         enemy.update(
@@ -408,8 +408,7 @@ fn generate_init_game_events(level: &Level) -> VecDeque<GameEvent> {
 
     // Generate basic enemy game events.
     for (id, _) in level.enemies.iter().enumerate() {
-        game_events.push_back(GameEvent::EnemyRelease { id });
-        game_events.push_back(GameEvent::EnemyCheckCollision { id });
+        game_events.push_back(GameEvent::EnemyInit { id });
     }
 
     // Generate initialization game events for bombs.

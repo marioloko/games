@@ -37,6 +37,15 @@ impl Enemy {
         results: &mut VecDeque<ResultEvent>,
     ) {
         match event {
+            GameEvent::EnemyInit { id } => {
+                // Let the enemy to start moving.
+                let movement_event = ResultEvent::EnemyBlock { id };
+                results.push_back(movement_event);
+
+                // Let the enemy to start checking their collisions.
+                let collision_event = ResultEvent::EnemyCheckCollision { id };
+                results.push_back(collision_event);
+            }
             GameEvent::EnemyRelease { id } => {
                 self.move_towards(player, maze);
                 let result = ResultEvent::EnemyBlock { id };
