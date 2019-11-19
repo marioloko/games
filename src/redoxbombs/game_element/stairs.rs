@@ -3,6 +3,7 @@ use game_element::Coordinates;
 use game_element::GameElement;
 use game_element::Player;
 use maze::Maze;
+use std::collections::VecDeque;
 
 /// A `Stairs` object represents an object used to
 /// go to the next level.
@@ -26,13 +27,24 @@ impl Stairs {
         Self { position }
     }
 
-    /// Handle an `InputEvent` and create the correspondant `ResultEvent`.
-    pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: GameEvent) -> ResultEvent {
+    /// Update the `Player` state according to an input event and generate
+    /// the right results events.
+    pub fn update(
+        &mut self,
+        player: &Player,
+        maze: &Maze,
+        event: GameEvent,
+        results: &mut VecDeque<ResultEvent>,
+    ) {
         match event {
             GameEvent::StairsRelease if player.get_position() == self.get_position() => {
-                ResultEvent::NextLevel
+                let result = ResultEvent::NextLevel;
+                results.push_back(result);
             }
-            _ => ResultEvent::StairsBlock,
+            _ => {
+                let result = ResultEvent::StairsBlock;
+                results.push_back(result);
+            }
         }
     }
 }

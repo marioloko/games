@@ -59,14 +59,9 @@ impl<W: Write> OutputController<W> {
         let x = 1 + position.x as u16;
         let y = 1 + position.y as u16;
 
-        write!(
-            self.output,
-            "{cursor} ",
-            cursor = cursor::Goto(x, y),
-        )   
-        .expect("OutputController cannot clear game element.");
+        write!(self.output, "{cursor} ", cursor = cursor::Goto(x, y),)
+            .expect("OutputController cannot clear game element.");
     }
-
 
     /// Draw the maze using the output. (But it is not render on
     /// the screen until `render` is called).

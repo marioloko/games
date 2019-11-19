@@ -1,6 +1,7 @@
 use events::{GameEvent, ResultEvent};
 use game_element::Coordinates;
 use game_element::GameElement;
+use std::collections::VecDeque;
 
 /// A `Fire` object represents the explosion fire produced by a bomb.
 #[derive(Debug)]
@@ -27,7 +28,11 @@ impl Fire {
     pub fn new(x: usize, y: usize, start_after: usize, duration: usize) -> Self {
         let position = Coordinates { x, y };
 
-        Self { position , start_after, duration }
+        Self {
+            position,
+            start_after,
+            duration,
+        }
     }
 
     /// Get the milliseconds to start the fire.
@@ -40,13 +45,23 @@ impl Fire {
         self.duration
     }
 
-    /// Take a turn given an input event and return a result event as a result.
-    pub fn take_turn(&self, event: GameEvent) -> ResultEvent {
+    /// Update the `Fire` state according to an input event and generate
+    /// the right results events.
+    pub fn update(&self, event: GameEvent, results: &mut VecDeque<ResultEvent>) {
         match event {
-            GameEvent::FireInit { id } => ResultEvent::FireCheckCollision { id },
-            GameEvent::FireCheckCollision { id } => ResultEvent::FireCheckCollision { id },
-            GameEvent::FirePutOut { id } => ResultEvent::FirePutOut { id },
-            _ => ResultEvent::DoNothing,
+            GameEvent::FireInit { id } => {
+                let result = ResultEvent::FireCheckCollision { id };
+                results.push_back(result);
+            }
+            GameEvent::FireCheckCollision { id } => {
+                let result = ResultEvent::FireCheckCollision { id };
+                results.push_back(result);
+            }
+            GameEvent::FirePutOut { id } => {
+                let result = ResultEvent::FirePutOut { id };
+                results.push_back(result);
+            }
+            _ => (),
         }
     }
 }

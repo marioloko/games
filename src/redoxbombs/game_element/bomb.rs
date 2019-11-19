@@ -1,7 +1,8 @@
 use events::{GameEvent, ResultEvent};
 use game_element::Coordinates;
-use game_element::GameElement;
 use game_element::Fire;
+use game_element::GameElement;
+use std::collections::VecDeque;
 
 /// A `Bomb` object represents a non exploded bomb.
 #[derive(Debug)]
@@ -24,15 +25,20 @@ impl Bomb {
         Self { position }
     }
 
-    /// Take a turn given an input event and return a result event as a result.
-    pub fn take_turn(&self, event: GameEvent) -> ResultEvent {
+    /// Update the `Bomb` state according to an input event and generate
+    /// the right results events.
+    pub fn update(&self, event: GameEvent, results: &mut VecDeque<ResultEvent>) {
         match event {
             GameEvent::BombExplode { id } => {
                 let fires = self.set_fire();
-                ResultEvent::BombExplode { id, fires }
+                let result = ResultEvent::BombExplode { id, fires };
+                results.push_back(result);
             }
-            GameEvent::BombInit { id } => ResultEvent::BombInit { id },
-            _ => ResultEvent::DoNothing,
+            GameEvent::BombInit { id } => {
+                let result = ResultEvent::BombInit { id };
+                results.push_back(result);
+            }
+            _ => (),
         }
     }
 
@@ -47,13 +53,11 @@ impl Bomb {
         let fire_coordinates = vec![
             // Current cell position.
             self.position,
-
             // Surrounding cells.
             up,
             down,
             left,
             right,
-
             // Surrounding cells one step further away.
             up.up(),
             down.down(),
@@ -63,14 +67,18 @@ impl Bomb {
 
         // The fire duration.
         let duration = 1000;
-        
+
         // Create the fires with different coordinates and starting time.
-        fire_coordinates.into_iter().enumerate().map(|(idx, coord)| {
-            let x = coord.x;
-            let y = coord.y;
-            let start_after = (duration / 4) * (idx / 5);
-            Fire::new(x, y, start_after, duration)
-        }).collect()
+        fire_coordinates
+            .into_iter()
+            .enumerate()
+            .map(|(idx, coord)| {
+                let x = coord.x;
+                let y = coord.y;
+                let start_after = (duration / 4) * (idx / 5);
+                Fire::new(x, y, start_after, duration)
+            })
+            .collect()
     }
 }
 

@@ -3,6 +3,7 @@ use game_element::Bomb;
 use game_element::Coordinates;
 use game_element::GameElement;
 use maze::Maze;
+use std::collections::VecDeque;
 
 /// Represent the Player.
 #[derive(Debug)]
@@ -25,18 +26,19 @@ impl Player {
         Self { position }
     }
 
-    /// Handle the player `InputEvent` and produce the appropriated `ResultEvent`.
-    pub fn take_turn(&mut self, maze: &Maze, event: InputEvent) -> ResultEvent {
+    /// Update the `Player` state according to an input event and generate
+    /// the right results events.
+    pub fn update(&mut self, maze: &Maze, event: InputEvent, results: &mut VecDeque<ResultEvent>) {
         match event {
             InputEvent::PlayerMove(dir) => {
                 self.move_player(maze, dir);
-                ResultEvent::DoNothing
             }
             InputEvent::PlayerCreateBomb => {
                 let bomb = self.put_bomb();
-                ResultEvent::BombCreated { bomb }
+                let result = ResultEvent::BombCreated { bomb };
+                results.push_back(result);
             }
-            _ => ResultEvent::DoNothing,
+            _ => (),
         }
     }
 

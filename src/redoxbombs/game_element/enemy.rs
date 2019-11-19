@@ -4,6 +4,7 @@ use game_element::GameElement;
 use game_element::Player;
 use maze::Maze;
 use rand::{self, Rng};
+use std::collections::VecDeque;
 
 /// A `Enemy` object represents a game enemy.
 #[derive(Debug)]
@@ -26,20 +27,32 @@ impl Enemy {
         Self { position }
     }
 
-    /// Handle a game event comming to the player.
-    pub fn take_turn(&mut self, player: &Player, maze: &Maze, event: GameEvent) -> ResultEvent {
+    /// Update the `Enemy` state according to an input event and generate
+    /// the right results events.
+    pub fn update(
+        &mut self,
+        player: &Player,
+        maze: &Maze,
+        event: GameEvent,
+        results: &mut VecDeque<ResultEvent>,
+    ) {
         match event {
             GameEvent::EnemyRelease { id } => {
                 self.move_towards(player, maze);
-                ResultEvent::EnemyBlock { id }
+                let result = ResultEvent::EnemyBlock { id };
+                results.push_back(result);
             }
             GameEvent::EnemyCheckCollision { id }
                 if self.get_position() == player.get_position() =>
             {
-                ResultEvent::PlayerDied
+                let result = ResultEvent::PlayerDied;
+                results.push_back(result);
             }
-            GameEvent::EnemyCheckCollision { id } => ResultEvent::EnemyCheckCollision { id },
-            _ => ResultEvent::DoNothing,
+            GameEvent::EnemyCheckCollision { id } => {
+                let result = ResultEvent::EnemyCheckCollision { id };
+                results.push_back(result);
+            }
+            _ => (),
         }
     }
 

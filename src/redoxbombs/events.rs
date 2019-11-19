@@ -36,7 +36,7 @@ pub enum GameEvent {
     BombExplode { id: usize },
 
     /// Set the fire to burn.
-    FireInit { id: usize }, 
+    FireInit { id: usize },
 
     /// Allow fire with identifier `id` to check collision
     /// with other game elements.

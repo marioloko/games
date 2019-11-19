@@ -1,13 +1,13 @@
 /// A `GameElement` parser.
 pub mod parser;
 
+mod bomb;
 mod coordinates;
 mod enemy;
+mod fire;
 mod game_element;
 mod player;
 mod stairs;
-mod bomb;
-mod fire;
 
 /// The `Coordiantes` for representing a `GameElement` position.
 pub use self::coordinates::Coordinates;
