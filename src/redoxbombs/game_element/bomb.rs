@@ -29,14 +29,24 @@ impl Bomb {
     /// the right results events.
     pub fn update(&self, event: GameEvent, results: &mut VecDeque<ResultEvent>) {
         match event {
+            GameEvent::BombInit { id } => {
+                // Initialize the bomb.
+                let result = ResultEvent::BombInit { id };
+                results.push_back(result);
+
+                // Notify that the game state has changed.
+                let updated_event = ResultEvent::GameUpdated;
+                results.push_back(updated_event);
+            }
             GameEvent::BombExplode { id } => {
+                // Create the bomb explosion fires.
                 let fires = self.set_fire();
                 let result = ResultEvent::BombExplode { id, fires };
                 results.push_back(result);
-            }
-            GameEvent::BombInit { id } => {
-                let result = ResultEvent::BombInit { id };
-                results.push_back(result);
+
+                // Notify that the game state has changed.
+                let updated_event = ResultEvent::GameUpdated;
+                results.push_back(updated_event);
             }
             _ => (),
         }

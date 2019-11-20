@@ -47,17 +47,24 @@ impl Enemy {
                 results.push_back(collision_event);
             }
             GameEvent::EnemyRelease { id } => {
+                // Move the enemy towards the player.
                 self.move_towards(player, maze);
                 let result = ResultEvent::EnemyBlock { id };
                 results.push_back(result);
+
+                // Notify that the game state has changed.
+                let updated_event = ResultEvent::GameUpdated;
+                results.push_back(updated_event);
             }
             GameEvent::EnemyCheckCollision { id }
                 if self.get_position() == player.get_position() =>
             {
+                // If enemy collides with player then the player dies.
                 let result = ResultEvent::PlayerDied;
                 results.push_back(result);
             }
             GameEvent::EnemyCheckCollision { id } => {
+                // Ensure to check the collision again in the future.
                 let result = ResultEvent::EnemyCheckCollision { id };
                 results.push_back(result);
             }

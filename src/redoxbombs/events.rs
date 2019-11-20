@@ -49,7 +49,7 @@ pub enum GameEvent {
     FirePutOut { id: usize },
 
     /// Check if the player collides with the stairs.
-    StairsCheckCollision
+    StairsCheckCollision,
 }
 
 /// A `ResultEvent`is an event produced by a `GameElement`
@@ -66,6 +66,10 @@ pub enum ResultEvent {
 
     /// Leave the main loop.
     GameExit,
+
+    /// State that the game world state has been updated. It is
+    /// useful for actions that take place on update like rendering.
+    GameUpdated,
 
     /// The player died so exit the game.
     PlayerDied,

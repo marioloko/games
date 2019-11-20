@@ -31,9 +31,15 @@ impl Player {
     pub fn update(&mut self, maze: &Maze, event: InputEvent, results: &mut VecDeque<ResultEvent>) {
         match event {
             InputEvent::PlayerMove(dir) => {
+                // Move player in the input direction.
                 self.move_player(maze, dir);
+
+                // Notify that the game state has changed.
+                let updated_event = ResultEvent::GameUpdated;
+                results.push_back(updated_event);
             }
             InputEvent::PlayerCreateBomb => {
+                // Put a bomb in the current coordinates.
                 let bomb = self.put_bomb();
                 let result = ResultEvent::BombCreated { bomb };
                 results.push_back(result);

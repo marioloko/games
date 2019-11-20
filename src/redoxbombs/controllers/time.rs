@@ -104,6 +104,11 @@ impl TimeController {
         Some(timeout.event)
     }
 
+    /// Remove all the scheduled events.
+    pub fn clear(&mut self) {
+        self.scheduled_events.clear();
+    }
+
     /// Check if there is any expired `Timeout` in the queue.
     fn has_any_expired_timeout(&self) -> bool {
         match self.scheduled_events.peek() {

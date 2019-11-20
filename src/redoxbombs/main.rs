@@ -62,7 +62,8 @@ struct Game<R: Read, W: Write> {
     /// The meta status of the game.
     game_mode: GameMode,
 
-    /// Whether the game state have been updated.
+    /// Whether or not the game state has been updated. It is
+    /// useful in order to check when to render.
     updated: bool,
 }
 
@@ -89,7 +90,7 @@ impl<R: Read, W: Write> Game<R, W> {
         // The game is running by default.
         let game_mode = GameMode::Running;
 
-        // At the beggining the game state has not been updated.
+        // By default the game is not updated.
         let updated = false;
 
         Game {
@@ -144,7 +145,7 @@ impl<R: Read, W: Write> Game<R, W> {
             // Avoid inmediate redrawing of the maze.
             thread::sleep(Duration::from_millis(REFRESH_TIME));
 
-            // Update the map if the game state has been updated.
+            // If the game has been updated then render the game again.
             if self.updated {
                 self.render();
                 self.updated = false;
@@ -158,9 +159,6 @@ impl<R: Read, W: Write> Game<R, W> {
     fn handle_input_event(&mut self, input_event: InputEvent) {
         match input_event {
             InputEvent::PlayerMove(_) => {
-                // Mark the game as updated.
-                self.updated = true;
-
                 // Move player.
                 self.level
                     .player
@@ -187,23 +185,9 @@ impl<R: Read, W: Write> Game<R, W> {
     /// of the current level.
     fn handle_game_event(&mut self, game_event: GameEvent) {
         match game_event {
-            GameEvent::EnemyRelease { id } => {
-                match self.level.enemies.get_mut(id).unwrap_or(&mut None) {
-                    Some(enemy) => {
-                        // Mark the game as updated.
-                        self.updated = true;
-
-                        enemy.update(
-                            &self.level.player,
-                            &self.level.maze,
-                            game_event,
-                            &mut self.result_events,
-                        );
-                    }
-                    _ => (),
-                }
-            }
-            GameEvent::EnemyCheckCollision { id } | GameEvent::EnemyInit { id } => {
+            GameEvent::EnemyRelease { id }
+            | GameEvent::EnemyCheckCollision { id }
+            | GameEvent::EnemyInit { id } => {
                 match self.level.enemies.get_mut(id).unwrap_or(&mut None) {
                     Some(enemy) => {
                         enemy.update(
@@ -227,9 +211,6 @@ impl<R: Read, W: Write> Game<R, W> {
             GameEvent::FireInit { id } => {
                 match self.level.fires.get_mut(id).unwrap_or(&mut None) {
                     Some(fire) => {
-                        // Mark the game as updated.
-                        self.updated = true;
-
                         // Start checking collisions.
                         fire.update(game_event, &mut self.result_events);
                     }
@@ -243,7 +224,7 @@ impl<R: Read, W: Write> Game<R, W> {
                 &mut self.result_events,
             ),
             GameEvent::BombExplode { id } | GameEvent::BombInit { id } => {
-                match self.level.bombs.get(id).unwrap() {
+                match self.level.bombs.get(id).unwrap_or(&None) {
                     Some(bomb) => {
                         bomb.update(game_event, &mut self.result_events);
                     }
@@ -262,9 +243,6 @@ impl<R: Read, W: Write> Game<R, W> {
                 self.time_controller.schedule_event_in(500, game_event);
             }
             ResultEvent::NextLevel => {
-                // Mark the game as updated.
-                self.updated = true;
-
                 // Update the level to the next one.
                 let next_level = self.level.next().expect("There is no next level.");
                 self.level = next_level;
@@ -273,15 +251,22 @@ impl<R: Read, W: Write> Game<R, W> {
                 self.input_events.clear();
                 self.game_events.clear();
                 self.result_events.clear();
+                self.time_controller.clear();
 
                 // Generate input events for the new level.
                 self.game_events = generate_init_game_events(&self.level);
             }
             ResultEvent::PlayerDied | ResultEvent::GameExit => {
+                // Exit game.
                 self.game_mode = GameMode::Ended;
             }
             ResultEvent::GamePause => {
+                // Change game to paused mode. Lock movement.
                 self.game_mode = GameMode::Paused;
+            }
+            ResultEvent::GameUpdated => {
+                // Set the game as updated if any change in the world state.
+                self.updated = true;
             }
             ResultEvent::StairsCheckCollision => {
                 self.game_events.push_back(GameEvent::StairsCheckCollision);
@@ -291,17 +276,11 @@ impl<R: Read, W: Write> Game<R, W> {
                     .push_back(GameEvent::EnemyCheckCollision { id });
             }
             ResultEvent::BombInit { id } => {
-                // Mark the game as updated.
-                self.updated = true;
-
                 // Create a GameEvent to explode and schedule it.
                 let game_event = GameEvent::BombExplode { id };
                 self.time_controller.schedule_event_in(1_000, game_event);
             }
             ResultEvent::BombCreated { bomb } => {
-                // Mark the game as updated.
-                self.updated = true;
-
                 // Add bomb to the level and get its id.
                 let id = self.level.add_bomb(bomb);
 
@@ -310,9 +289,6 @@ impl<R: Read, W: Write> Game<R, W> {
                 self.time_controller.schedule_event_in(3_000, game_event);
             }
             ResultEvent::BombExplode { id, fires } => {
-                // Mark the game as updated.
-                self.updated = true;
-
                 // Discard bomb at exploding time.
                 self.level.bombs[id].take();
 
@@ -339,9 +315,6 @@ impl<R: Read, W: Write> Game<R, W> {
                     .push_back(GameEvent::FireCheckCollision { id });
             }
             ResultEvent::FirePutOut { id } => {
-                // Mark the game as updated.
-                self.updated = true;
-
                 // Discard the fire
                 self.level.fires[id].take();
             }

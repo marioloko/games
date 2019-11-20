@@ -52,6 +52,10 @@ impl Fire {
             GameEvent::FireInit { id } => {
                 let result = ResultEvent::FireCheckCollision { id };
                 results.push_back(result);
+
+                // Notify that the game state has changed.
+                let updated_event = ResultEvent::GameUpdated;
+                results.push_back(updated_event);
             }
             GameEvent::FireCheckCollision { id } => {
                 let result = ResultEvent::FireCheckCollision { id };
@@ -60,6 +64,10 @@ impl Fire {
             GameEvent::FirePutOut { id } => {
                 let result = ResultEvent::FirePutOut { id };
                 results.push_back(result);
+
+                // Notify that the game state has changed.
+                let updated_event = ResultEvent::GameUpdated;
+                results.push_back(updated_event);
             }
             _ => (),
         }
