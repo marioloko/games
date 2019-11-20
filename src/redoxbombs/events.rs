@@ -48,8 +48,8 @@ pub enum GameEvent {
     /// Put the fire out.
     FirePutOut { id: usize },
 
-    /// Allow a `Stairs` object to take a turn.
-    StairsRelease,
+    /// Check if the player collides with the stairs.
+    StairsCheckCollision
 }
 
 /// A `ResultEvent`is an event produced by a `GameElement`
@@ -94,8 +94,8 @@ pub enum ResultEvent {
     /// Allow fire to check collision with other game elements.
     FireCheckCollision { id: usize },
 
-    /// Do not allow stairs to take turn.
-    StairsBlock,
+    /// Schedule GameEvent::StairsCheckCollision event.
+    StairsCheckCollision,
 
     /// Change the game to the next level.
     NextLevel,

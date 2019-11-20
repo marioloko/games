@@ -37,12 +37,14 @@ impl Stairs {
         results: &mut VecDeque<ResultEvent>,
     ) {
         match event {
-            GameEvent::StairsRelease if player.get_position() == self.get_position() => {
+            GameEvent::StairsCheckCollision if player.get_position() == self.get_position() => {
+                // If the player collides with the stairs, then go to next level.
                 let result = ResultEvent::NextLevel;
                 results.push_back(result);
             }
             _ => {
-                let result = ResultEvent::StairsBlock;
+                // If no meaningful collision then check again on next iteraction.
+                let result = ResultEvent::StairsCheckCollision;
                 results.push_back(result);
             }
         }

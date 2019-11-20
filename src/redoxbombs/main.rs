@@ -236,7 +236,7 @@ impl<R: Read, W: Write> Game<R, W> {
                     _ => (),
                 }
             }
-            GameEvent::StairsRelease => self.level.stairs.update(
+            GameEvent::StairsCheckCollision => self.level.stairs.update(
                 &self.level.player,
                 &self.level.maze,
                 game_event,
@@ -283,8 +283,8 @@ impl<R: Read, W: Write> Game<R, W> {
             ResultEvent::GamePause => {
                 self.game_mode = GameMode::Paused;
             }
-            ResultEvent::StairsBlock => {
-                self.game_events.push_back(GameEvent::StairsRelease);
+            ResultEvent::StairsCheckCollision => {
+                self.game_events.push_back(GameEvent::StairsCheckCollision);
             }
             ResultEvent::EnemyCheckCollision { id } => {
                 self.game_events
@@ -416,9 +416,8 @@ fn generate_init_game_events(level: &Level) -> VecDeque<GameEvent> {
         game_events.push_back(GameEvent::BombInit { id });
     }
 
-    // Generate a release event for stairs to force it to take turn at least
-    // once.
-    game_events.push_back(GameEvent::StairsRelease);
+    // Generate an event for the stairs to start checking.
+    game_events.push_back(GameEvent::StairsCheckCollision);
 
     game_events
 }
