@@ -304,11 +304,8 @@ impl<R: Read, W: Write> Game<R, W> {
             // Discard every InputEvent different from GamePause.
             // If GamePause then leave pause state.
             while let Some(input_event) = self.input_controller.next_event() {
-                match input_event {
-                    InputEvent::GamePause => {
-                        self.game_mode = GameMode::Running;
-                    }
-                    _ => (),
+                if let InputEvent::GamePause = input_event {
+                    self.game_mode = GameMode::Running;
                 }
             }
 
@@ -328,17 +325,26 @@ impl<R: Read, W: Write> Game<R, W> {
         self.level = next_level;
 
         // Remove events for this level.
-        self.input_events.clear();
-        self.game_events.clear();
-        self.result_events.clear();
-        self.time_controller.clear();
+        self.clear_all_events();
 
         // Generate input events for the new level.
         self.game_events = generate_init_game_events(&self.level);
     }
 
+    /// Clear all the events in the game.
+    fn clear_all_events(&mut self) {
+        // Clear the events queues.
+        self.input_events.clear();
+        self.game_events.clear();
+        self.result_events.clear();
+
+        // Clear scheduled events. To avoid reschedule them in the future.
+        self.time_controller.clear();
+    }
+
     /// Render the maze and all the game elements on the screen.
     fn render(&mut self) {
+        // Clear the whole screen.
         self.output_controller.clear();
 
         // Draw the maze.
