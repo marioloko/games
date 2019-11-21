@@ -227,18 +227,8 @@ impl<R: Read, W: Write> Game<R, W> {
                 self.time_controller.schedule_event_in(500, game_event);
             }
             ResultEvent::NextLevel => {
-                // Update the level to the next one.
-                let next_level = self.level.next().expect("There is no next level.");
-                self.level = next_level;
-
-                // Remove events for this level.
-                self.input_events.clear();
-                self.game_events.clear();
-                self.result_events.clear();
-                self.time_controller.clear();
-
-                // Generate input events for the new level.
-                self.game_events = generate_init_game_events(&self.level);
+                // Load the next level. This will clear the events.
+                self.load_next_level();
             }
             ResultEvent::PlayerDied | ResultEvent::GameExit => {
                 // Exit game.
@@ -328,6 +318,23 @@ impl<R: Read, W: Write> Game<R, W> {
                 thread::sleep(Duration::from_millis(PAUSE_SLEEP_MILLIS));
             }
         }
+    }
+
+    /// Load the next level. It reset the events to avoid collisions
+    /// between different level events.
+    fn load_next_level(&mut self) {
+        // Update the level to the next one.
+        let next_level = self.level.next().expect("There is no next level.");
+        self.level = next_level;
+
+        // Remove events for this level.
+        self.input_events.clear();
+        self.game_events.clear();
+        self.result_events.clear();
+        self.time_controller.clear();
+
+        // Generate input events for the new level.
+        self.game_events = generate_init_game_events(&self.level);
     }
 
     /// Render the maze and all the game elements on the screen.
