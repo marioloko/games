@@ -58,9 +58,6 @@ pub enum GameEvent {
 /// The possibe values are:
 #[derive(Debug)]
 pub enum ResultEvent {
-    /// Discard event. Used when no extra action is required.
-    DoNothing,
-
     /// Stop the game keeping the state.
     GamePause,
 

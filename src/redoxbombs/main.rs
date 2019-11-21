@@ -293,7 +293,6 @@ impl<R: Read, W: Write> Game<R, W> {
                 self.level.fires[id].take();
             }
             ResultEvent::EnemyDied { id } => unimplemented!(),
-            ResultEvent::DoNothing => (),
         }
     }
 
