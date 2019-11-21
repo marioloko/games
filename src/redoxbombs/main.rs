@@ -188,33 +188,20 @@ impl<R: Read, W: Write> Game<R, W> {
             GameEvent::EnemyRelease { id }
             | GameEvent::EnemyCheckCollision { id }
             | GameEvent::EnemyInit { id } => {
-                match self.level.enemies.get_mut(id).unwrap_or(&mut None) {
-                    Some(enemy) => {
-                        enemy.update(
-                            &self.level.player,
-                            &self.level.maze,
-                            game_event,
-                            &mut self.result_events,
-                        );
-                    }
-                    _ => (),
+                if let Some(enemy) = self.level.enemies.get_mut(id).unwrap_or(&mut None) {
+                    enemy.update(
+                        &self.level.player,
+                        &self.level.maze,
+                        game_event,
+                        &mut self.result_events,
+                    );
                 }
             }
-            GameEvent::FireCheckCollision { id } | GameEvent::FirePutOut { id } => {
-                match self.level.fires.get_mut(id).unwrap_or(&mut None) {
-                    Some(fire) => {
-                        fire.update(game_event, &mut self.result_events);
-                    }
-                    _ => (),
-                }
-            }
-            GameEvent::FireInit { id } => {
-                match self.level.fires.get_mut(id).unwrap_or(&mut None) {
-                    Some(fire) => {
-                        // Start checking collisions.
-                        fire.update(game_event, &mut self.result_events);
-                    }
-                    _ => (),
+            GameEvent::FireCheckCollision { id }
+            | GameEvent::FirePutOut { id }
+            | GameEvent::FireInit { id } => {
+                if let Some(fire) = self.level.fires.get_mut(id).unwrap_or(&mut None) {
+                    fire.update(game_event, &mut self.result_events);
                 }
             }
             GameEvent::StairsCheckCollision => self.level.stairs.update(
@@ -224,11 +211,8 @@ impl<R: Read, W: Write> Game<R, W> {
                 &mut self.result_events,
             ),
             GameEvent::BombExplode { id } | GameEvent::BombInit { id } => {
-                match self.level.bombs.get(id).unwrap_or(&None) {
-                    Some(bomb) => {
-                        bomb.update(game_event, &mut self.result_events);
-                    }
-                    _ => (),
+                if let Some(bomb) = self.level.bombs.get(id).unwrap_or(&None) {
+                    bomb.update(game_event, &mut self.result_events);
                 }
             }
         }
