@@ -81,7 +81,7 @@ pub enum ResultEvent {
     EnemyDied { id: usize },
 
     /// Include bomb to level and schedule it to explode.
-    BombCreated { bomb: Bomb },
+    BombNew { bomb: Bomb },
 
     /// Explode the bomb creating the corresponding fires.
     BombExplode { id: usize, fires: Vec<Fire> },

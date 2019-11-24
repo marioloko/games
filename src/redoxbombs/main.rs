@@ -249,7 +249,7 @@ impl<R: Read, W: Write> Game<R, W> {
                 // Set next game event to execute.
                 self.game_events.push_back(event);
             }
-            ResultEvent::BombCreated { bomb } => {
+            ResultEvent::BombNew { bomb } => {
                 // Add bomb to the level and get its id.
                 let id = self.level.add_bomb(bomb);
 

@@ -41,7 +41,7 @@ impl Player {
             InputEvent::PlayerCreateBomb => {
                 // Put a bomb in the current coordinates.
                 let bomb = self.put_bomb();
-                let result = ResultEvent::BombCreated { bomb };
+                let result = ResultEvent::BombNew { bomb };
                 results.push_back(result);
             }
             _ => (),
