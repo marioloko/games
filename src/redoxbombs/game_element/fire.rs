@@ -50,18 +50,24 @@ impl Fire {
     pub fn update(&self, event: GameEvent, results: &mut VecDeque<ResultEvent>) {
         match event {
             GameEvent::FireInit { id } => {
-                let result = ResultEvent::FireCheckCollision { id };
-                results.push_back(result);
+                // Check collisions with other game elements.
+                let collision_event = GameEvent::FireCheckCollision { id };
+                let collision_event = ResultEvent::GameSetEvent {
+                    event: collision_event,
+                };
+                results.push_back(collision_event);
 
                 // Notify that the game state has changed.
                 let updated_event = ResultEvent::GameUpdated;
                 results.push_back(updated_event);
             }
             GameEvent::FireCheckCollision { id } => {
-                let result = ResultEvent::FireCheckCollision { id };
-                results.push_back(result);
+                // Recheck collision with other game elements.
+                let collision_event = ResultEvent::GameSetEvent { event };
+                results.push_back(collision_event);
             }
             GameEvent::FirePutOut { id } => {
+                // Extinguish the fire.
                 let result = ResultEvent::FirePutOut { id };
                 results.push_back(result);
 

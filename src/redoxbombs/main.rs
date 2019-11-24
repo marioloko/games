@@ -185,7 +185,7 @@ impl<R: Read, W: Write> Game<R, W> {
     /// of the current level.
     fn handle_game_event(&mut self, game_event: GameEvent) {
         match game_event {
-            GameEvent::EnemyRelease { id }
+            GameEvent::EnemyMove { id }
             | GameEvent::EnemyCheckCollision { id }
             | GameEvent::EnemyInit { id } => {
                 if let Some(enemy) = self.level.enemies.get_mut(id).unwrap_or(&mut None) {
@@ -222,10 +222,6 @@ impl<R: Read, W: Write> Game<R, W> {
     /// for that event.
     fn handle_result_event(&mut self, result_event: ResultEvent) {
         match result_event {
-            ResultEvent::EnemyBlock { id } => {
-                let game_event = GameEvent::EnemyRelease { id };
-                self.time_controller.schedule_event_in(500, game_event);
-            }
             ResultEvent::NextLevel => {
                 // Load the next level. This will clear the events.
                 self.load_next_level();
@@ -242,17 +238,13 @@ impl<R: Read, W: Write> Game<R, W> {
                 // Set the game as updated if any change in the world state.
                 self.updated = true;
             }
-            ResultEvent::StairsCheckCollision => {
-                self.game_events.push_back(GameEvent::StairsCheckCollision);
+            ResultEvent::GameScheduleEvent { millis, event } => {
+                // Schedule and event after `millis` milliseconds.
+                self.time_controller.schedule_event_in(millis, event);
             }
-            ResultEvent::EnemyCheckCollision { id } => {
-                self.game_events
-                    .push_back(GameEvent::EnemyCheckCollision { id });
-            }
-            ResultEvent::BombInit { id } => {
-                // Create a GameEvent to explode and schedule it.
-                let game_event = GameEvent::BombExplode { id };
-                self.time_controller.schedule_event_in(1_000, game_event);
+            ResultEvent::GameSetEvent { event } => {
+                // Set next game event to execute.
+                self.game_events.push_back(event);
             }
             ResultEvent::BombCreated { bomb } => {
                 // Add bomb to the level and get its id.
@@ -283,10 +275,6 @@ impl<R: Read, W: Write> Game<R, W> {
                     self.time_controller
                         .schedule_event_in(duration as u64, event);
                 }
-            }
-            ResultEvent::FireCheckCollision { id } => {
-                self.game_events
-                    .push_back(GameEvent::FireCheckCollision { id });
             }
             ResultEvent::FirePutOut { id } => {
                 // Discard the fire

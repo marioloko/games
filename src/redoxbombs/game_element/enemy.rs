@@ -20,6 +20,10 @@ impl Enemy {
     /// Character to represent an `Enemy` object in the `Maze`.
     const REPRESENTATION: char = 'E';
 
+    /// It is the delay before the next enemy movement. It is useful to
+    /// slow down the enemies to a speed manageable by an human player.
+    const MOVEMENT_DELAY: u64 = 500;
+
     /// Creates a new `Enemy` object given its coordinates.
     pub fn new(x: usize, y: usize) -> Self {
         let position = Coordinates { x, y };
@@ -39,18 +43,29 @@ impl Enemy {
         match event {
             GameEvent::EnemyInit { id } => {
                 // Let the enemy to start moving.
-                let movement_event = ResultEvent::EnemyBlock { id };
+                let movement_event = GameEvent::EnemyMove { id };
+                let movement_event = ResultEvent::GameSetEvent {
+                    event: movement_event,
+                };
                 results.push_back(movement_event);
 
                 // Let the enemy to start checking their collisions.
-                let collision_event = ResultEvent::EnemyCheckCollision { id };
+                let collision_event = GameEvent::EnemyCheckCollision { id };
+                let collision_event = ResultEvent::GameSetEvent {
+                    event: collision_event,
+                };
                 results.push_back(collision_event);
             }
-            GameEvent::EnemyRelease { id } => {
+            GameEvent::EnemyMove { id } => {
                 // Move the enemy towards the player.
                 self.move_towards(player, maze);
-                let result = ResultEvent::EnemyBlock { id };
-                results.push_back(result);
+
+                // Reschedule this event to be executed in the future after a delay.
+                let scheduling_event = ResultEvent::GameScheduleEvent {
+                    millis: Self::MOVEMENT_DELAY,
+                    event,
+                };
+                results.push_back(scheduling_event);
 
                 // Notify that the game state has changed.
                 let updated_event = ResultEvent::GameUpdated;
@@ -64,8 +79,8 @@ impl Enemy {
                 results.push_back(result);
             }
             GameEvent::EnemyCheckCollision { id } => {
-                // Ensure to check the collision again in the future.
-                let result = ResultEvent::EnemyCheckCollision { id };
+                // Ensure to recheck the collision again in the future.
+                let result = ResultEvent::GameSetEvent { event };
                 results.push_back(result);
             }
             _ => (),

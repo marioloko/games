@@ -44,8 +44,11 @@ impl Stairs {
             }
             _ => {
                 // If no meaningful collision then check again on next iteraction.
-                let result = ResultEvent::StairsCheckCollision;
-                results.push_back(result);
+                let collision_event = GameEvent::StairsCheckCollision;
+                let collision_event = ResultEvent::GameSetEvent {
+                    event: collision_event,
+                };
+                results.push_back(collision_event);
             }
         }
     }

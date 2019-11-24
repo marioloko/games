@@ -17,6 +17,7 @@ impl Bomb {
 
     /// Character to represent an `Bomb` object in the `Maze`.
     const REPRESENTATION: char = 'o';
+    const TIME_TO_EXPLODE: u64 = 3_000;
 
     /// Creates a new `Bomb` object given its coordinates.
     pub fn new(x: usize, y: usize) -> Self {
@@ -30,9 +31,13 @@ impl Bomb {
     pub fn update(&self, event: GameEvent, results: &mut VecDeque<ResultEvent>) {
         match event {
             GameEvent::BombInit { id } => {
-                // Initialize the bomb.
-                let result = ResultEvent::BombInit { id };
-                results.push_back(result);
+                // Set bomb to explode in the future.
+                let explode_event = GameEvent::BombExplode { id };
+                let explode_scheduling_event = ResultEvent::GameScheduleEvent {
+                    millis: Self::TIME_TO_EXPLODE,
+                    event: explode_event,
+                };
+                results.push_back(explode_scheduling_event);
 
                 // Notify that the game state has changed.
                 let updated_event = ResultEvent::GameUpdated;

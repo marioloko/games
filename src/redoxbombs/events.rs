@@ -30,7 +30,7 @@ pub enum GameEvent {
     EnemyCheckCollision { id: usize },
 
     /// Allow enemy with number `id` to move.
-    EnemyRelease { id: usize },
+    EnemyMove { id: usize },
 
     /// Initialize already created bomb.
     BombInit { id: usize },
@@ -68,35 +68,26 @@ pub enum ResultEvent {
     /// useful for actions that take place on update like rendering.
     GameUpdated,
 
+    /// Schedule a game event to be executed after `millis` milliseconds.
+    GameScheduleEvent { millis: u64, event: GameEvent },
+
+    /// Convert `ResultEvent` to `GameEvent`.
+    GameSetEvent { event: GameEvent },
+
     /// The player died so exit the game.
     PlayerDied,
-
-    /// Allow enemy to check collision with other game elements.
-    EnemyCheckCollision { id: usize },
 
     /// Remove enemy with number `id`.
     EnemyDied { id: usize },
 
-    /// Do not allow enemy with `id` to move.
-    EnemyBlock { id: usize },
-
     /// Include bomb to level and schedule it to explode.
     BombCreated { bomb: Bomb },
-
-    /// Schedule to explode an existing bomb.
-    BombInit { id: usize },
 
     /// Explode the bomb creating the corresponding fires.
     BombExplode { id: usize, fires: Vec<Fire> },
 
     /// Put out the fire.
     FirePutOut { id: usize },
-
-    /// Allow fire to check collision with other game elements.
-    FireCheckCollision { id: usize },
-
-    /// Schedule GameEvent::StairsCheckCollision event.
-    StairsCheckCollision,
 
     /// Change the game to the next level.
     NextLevel,
