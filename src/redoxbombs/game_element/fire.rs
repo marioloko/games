@@ -10,7 +10,7 @@ pub struct Fire {
     position: Coordinates,
 
     /// Milliseconds to start the fire.
-    start_after: usize,
+    start_after: u64,
 
     /// Duration in milliseconds before extinguish the fire.
     duration: u64,
@@ -25,7 +25,7 @@ impl Fire {
 
     /// Creates a new `Bomb` object given its coordinates, the starting time
     /// and its duration.
-    pub fn new(x: usize, y: usize, start_after: usize, duration: u64) -> Self {
+    pub fn new(x: usize, y: usize, start_after: u64, duration: u64) -> Self {
         let position = Coordinates { x, y };
 
         Self {
@@ -36,7 +36,7 @@ impl Fire {
     }
 
     /// Get the milliseconds to start the fire.
-    pub fn start_after(&self) -> usize {
+    pub fn start_after(&self) -> u64 {
         self.start_after
     }
 
