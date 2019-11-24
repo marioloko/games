@@ -165,15 +165,18 @@ impl<R: Read, W: Write> Game<R, W> {
                     .update(&self.level.maze, input_event, &mut self.result_events)
             }
             InputEvent::PlayerCreateBomb => {
+                // Put bomb at player position.
                 self.level
                     .player
                     .update(&self.level.maze, input_event, &mut self.result_events)
             }
             InputEvent::GameQuit => {
+                // Exit Game.
                 let result = ResultEvent::GameExit;
                 self.result_events.push_back(result);
             }
             InputEvent::GamePause => {
+                // Pause the Game.
                 let result = ResultEvent::GamePause;
                 self.result_events.push_back(result);
             }
@@ -251,8 +254,8 @@ impl<R: Read, W: Write> Game<R, W> {
                 let id = self.level.add_bomb(bomb);
 
                 // Create a GameEvent to explode and schedule it.
-                let game_event = GameEvent::BombExplode { id };
-                self.time_controller.schedule_event_in(3_000, game_event);
+                let game_event = GameEvent::BombInit { id };
+                self.game_events.push_back(game_event);
             }
             ResultEvent::BombExplode { id, fires } => {
                 // Discard bomb at exploding time.
