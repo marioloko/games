@@ -265,7 +265,6 @@ impl<R: Read, W: Write> Game<R, W> {
                 for fire in fires {
                     // Compute the scheduling time for the fire.
                     let start_after = fire.start_after();
-                    let duration = start_after + fire.duration();
 
                     // Insert the fire and get its id.
                     let id = self.level.add_fire(fire);
@@ -273,10 +272,6 @@ impl<R: Read, W: Write> Game<R, W> {
                     let event = GameEvent::FireInit { id };
                     self.time_controller
                         .schedule_event_in(start_after as u64, event);
-
-                    let event = GameEvent::FirePutOut { id };
-                    self.time_controller
-                        .schedule_event_in(duration as u64, event);
                 }
             }
             ResultEvent::FirePutOut { id } => {

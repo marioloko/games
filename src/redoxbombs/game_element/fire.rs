@@ -13,7 +13,7 @@ pub struct Fire {
     start_after: usize,
 
     /// Duration in milliseconds before extinguish the fire.
-    duration: usize,
+    duration: u64,
 }
 
 impl Fire {
@@ -25,7 +25,7 @@ impl Fire {
 
     /// Creates a new `Bomb` object given its coordinates, the starting time
     /// and its duration.
-    pub fn new(x: usize, y: usize, start_after: usize, duration: usize) -> Self {
+    pub fn new(x: usize, y: usize, start_after: usize, duration: u64) -> Self {
         let position = Coordinates { x, y };
 
         Self {
@@ -40,16 +40,19 @@ impl Fire {
         self.start_after
     }
 
-    /// Get the milliseconds before putting the fire out.
-    pub fn duration(&self) -> usize {
-        self.duration
-    }
-
     /// Update the `Fire` state according to an input event and generate
     /// the right results events.
     pub fn update(&self, event: GameEvent, results: &mut VecDeque<ResultEvent>) {
         match event {
             GameEvent::FireInit { id } => {
+                // Add a fire extintion event to put out the fire after `duration`.
+                let extintion_event = GameEvent::FirePutOut { id };
+                let extintion_event = ResultEvent::GameScheduleEvent {
+                    millis: self.duration,
+                    event: extintion_event,
+                };
+                results.push_back(extintion_event);
+
                 // Check collisions with other game elements.
                 let collision_event = GameEvent::FireCheckCollision { id };
                 let collision_event = ResultEvent::GameSetEvent {

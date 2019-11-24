@@ -91,7 +91,7 @@ impl Bomb {
                 let x = coord.x;
                 let y = coord.y;
                 let start_after = (duration / 4) * (idx / 5);
-                Fire::new(x, y, start_after, duration)
+                Fire::new(x, y, start_after, duration as u64)
             })
             .collect()
     }
