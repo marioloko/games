@@ -51,7 +51,7 @@ impl Bomb {
                 results.extend(fire_events.into_iter());
 
                 // Remove the bomb from the map.
-                let explode_event = ResultEvent::BombExplode { id };
+                let explode_event = ResultEvent::BombDelete { id };
                 results.push_back(explode_event);
 
                 // Notify that the game state has changed.

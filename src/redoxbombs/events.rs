@@ -77,20 +77,20 @@ pub enum ResultEvent {
     /// The player died so exit the game.
     PlayerDied,
 
-    /// Remove enemy with number `id`.
-    EnemyDied { id: usize },
+    /// Delete the enemy with id `id from the level.
+    EnemyDelete { id: usize },
 
     /// Include bomb to level and schedule it to explode.
     BombNew { bomb: Bomb },
 
-    /// Explode the bomb and remove it from the level.
-    BombExplode { id: usize },
+    /// Delete the bomb with id `id` from the level.
+    BombDelete { id: usize },
 
     /// Include fire to level and schedule it to put out.
     FireNew { fire: Fire },
 
-    /// Put out the fire.
-    FirePutOut { id: usize },
+    /// Delete the fire with id `id` from the level.
+    FireDelete { id: usize },
 
     /// Change the game to the next level.
     NextLevel,

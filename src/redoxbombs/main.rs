@@ -257,7 +257,7 @@ impl<R: Read, W: Write> Game<R, W> {
                 let init_event = GameEvent::BombInit { id };
                 self.game_events.push_back(init_event);
             }
-            ResultEvent::BombExplode { id } => {
+            ResultEvent::BombDelete { id } => {
                 // Discard bomb at exploding time.
                 self.level.bombs[id].take();
             }
@@ -269,11 +269,11 @@ impl<R: Read, W: Write> Game<R, W> {
                 let init_event = GameEvent::FireInit { id };
                 self.game_events.push_back(init_event);
             }
-            ResultEvent::FirePutOut { id } => {
+            ResultEvent::FireDelete { id } => {
                 // Discard the fire.
                 self.level.fires[id].take();
             }
-            ResultEvent::EnemyDied { id } => unimplemented!(),
+            ResultEvent::EnemyDelete { id } => unimplemented!(),
         }
     }
 

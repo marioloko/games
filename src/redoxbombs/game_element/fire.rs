@@ -59,7 +59,7 @@ impl Fire {
             }
             GameEvent::FirePutOut { id } => {
                 // Extinguish the fire.
-                let result = ResultEvent::FirePutOut { id };
+                let result = ResultEvent::FireDelete { id };
                 results.push_back(result);
 
                 // Notify that the game state has changed.
