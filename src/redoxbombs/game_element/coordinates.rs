@@ -1,6 +1,6 @@
 use std::ops::Sub;
 
-/// A `Coordinate` represents a point in a 2D space.
+/// A `Coordinates` represents a point in a 2D space.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Coordinates {
     /// Represents the position in the horizontal axis (X-Axis).

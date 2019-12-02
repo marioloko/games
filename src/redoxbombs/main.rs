@@ -215,7 +215,7 @@ impl<R: Read, W: Write> Game<R, W> {
             ),
             GameEvent::BombExplode { id } | GameEvent::BombInit { id } => {
                 if let Some(bomb) = self.level.bombs.get(id).unwrap_or(&None) {
-                    bomb.update(game_event, &mut self.result_events);
+                    bomb.update(&self.level.maze, game_event, &mut self.result_events);
                 }
             }
         }
@@ -253,29 +253,24 @@ impl<R: Read, W: Write> Game<R, W> {
                 // Add bomb to the level and get its id.
                 let id = self.level.add_bomb(bomb);
 
-                // Create a GameEvent to explode and schedule it.
-                let game_event = GameEvent::BombInit { id };
-                self.game_events.push_back(game_event);
+                // Initialize the bomb to explode and check collisions.
+                let init_event = GameEvent::BombInit { id };
+                self.game_events.push_back(init_event);
             }
-            ResultEvent::BombExplode { id, fires } => {
+            ResultEvent::BombExplode { id } => {
                 // Discard bomb at exploding time.
                 self.level.bombs[id].take();
+            }
+            ResultEvent::FireNew { fire } => {
+                // Add bomb to the level and get its id.
+                let id = self.level.add_fire(fire);
 
-                // Create an init event for every fire.
-                for fire in fires {
-                    // Compute the scheduling time for the fire.
-                    let start_after = fire.start_after();
-
-                    // Insert the fire and get its id.
-                    let id = self.level.add_fire(fire);
-
-                    let event = GameEvent::FireInit { id };
-                    self.time_controller
-                        .schedule_event_in(start_after as u64, event);
-                }
+                // Initialize the fire to put out and check collisions.
+                let init_event = GameEvent::FireInit { id };
+                self.game_events.push_back(init_event);
             }
             ResultEvent::FirePutOut { id } => {
-                // Discard the fire
+                // Discard the fire.
                 self.level.fires[id].take();
             }
             ResultEvent::EnemyDied { id } => unimplemented!(),

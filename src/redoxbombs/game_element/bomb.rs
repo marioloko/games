@@ -2,6 +2,7 @@ use events::{GameEvent, ResultEvent};
 use game_element::Coordinates;
 use game_element::Fire;
 use game_element::GameElement;
+use maze::Maze;
 use std::collections::VecDeque;
 
 /// A `Bomb` object represents a non exploded bomb.
@@ -18,6 +19,7 @@ impl Bomb {
     /// Character to represent an `Bomb` object in the `Maze`.
     const REPRESENTATION: char = 'o';
     const TIME_TO_EXPLODE: u64 = 3_000;
+    const FIRE_DURATION: u64 = 200;
 
     /// Creates a new `Bomb` object given its coordinates.
     pub fn new(x: usize, y: usize) -> Self {
@@ -28,7 +30,7 @@ impl Bomb {
 
     /// Update the `Bomb` state according to an input event and generate
     /// the right results events.
-    pub fn update(&self, event: GameEvent, results: &mut VecDeque<ResultEvent>) {
+    pub fn update(&self, maze: &Maze, event: GameEvent, results: &mut VecDeque<ResultEvent>) {
         match event {
             GameEvent::BombInit { id } => {
                 // Set bomb to explode in the future.
@@ -45,9 +47,12 @@ impl Bomb {
             }
             GameEvent::BombExplode { id } => {
                 // Create the bomb explosion fires.
-                let fires = self.set_fire();
-                let result = ResultEvent::BombExplode { id, fires };
-                results.push_back(result);
+                let fire_events = self.set_fire(maze);
+                results.extend(fire_events.into_iter());
+
+                // Remove the bomb from the map.
+                let explode_event = ResultEvent::BombExplode { id };
+                results.push_back(explode_event);
 
                 // Notify that the game state has changed.
                 let updated_event = ResultEvent::GameUpdated;
@@ -57,41 +62,55 @@ impl Bomb {
         }
     }
 
-    /// Create fires in 2 cells cross fashion.
-    fn set_fire(&self) -> Vec<Fire> {
-        // Get all the surrounded cells.
-        let up = self.position.up();
-        let down = self.position.down();
-        let left = self.position.left();
-        let right = self.position.right();
+    /// Create fires in bomb cell and in every cell located 1 or 2
+    /// positions away from the bomb cell in the directions: up,
+    /// down, left, right.
+    fn set_fire(&self, maze: &Maze) -> VecDeque<ResultEvent> {
+        // Create vector where to store the fire coordinates.
+        let mut fire_coordinates = VecDeque::with_capacity(9);
 
-        let fire_coordinates = vec![
-            // Current cell position.
-            self.position,
-            // Surrounding cells.
-            up,
-            down,
-            left,
-            right,
-            // Surrounding cells one step further away.
-            up.up(),
-            down.down(),
-            left.left(),
-            right.right(),
-        ];
+        // Insert the bomb position in the fire vector.
+        fire_coordinates.push_back(self.position);
 
-        // The fire duration.
-        let duration = 1000;
+        /// Compute the next coordinate using `next_coordinate_function`
+        /// check if the next coordinate is blocked and if not then
+        /// store it in the `fire_coordinates` vector.
+        macro_rules! insert_next_coordinate_if_not_blocked {
+            ($direction:ident, $next_coordinate_function:expr) => {{
+                // Compute next coordinate and update coordinate if not blocked.
+                $direction = $direction
+                    .map(|dir| $next_coordinate_function(&dir))
+                    .filter(|dir| !maze.is_blocked(dir.x, dir.y));
 
-        // Create the fires with different coordinates and starting time.
+                // If not blocked store coordinate in fire_coordinates.
+                if let Some(coordinate) = $direction {
+                    fire_coordinates.push_back(coordinate);
+                }
+            }};
+        }
+
+        // Init the different fire directions.
+        let mut up = Some(self.position);
+        let mut down = Some(self.position);
+        let mut left = Some(self.position);
+        let mut right = Some(self.position);
+
+        // Insert in the fire_coordinates vector every non-blocked position
+        // located 1 or 2 positions away from the bomb position, in the
+        // directions: up, down, left and right.
+        for _ in 0..2 {
+            insert_next_coordinate_if_not_blocked!(up, Coordinates::up);
+            insert_next_coordinate_if_not_blocked!(down, Coordinates::down);
+            insert_next_coordinate_if_not_blocked!(left, Coordinates::left);
+            insert_next_coordinate_if_not_blocked!(right, Coordinates::right);
+        }
+
+        // Convert fire_coordinates to FireNew events.
         fire_coordinates
             .into_iter()
-            .enumerate()
-            .map(|(idx, coord)| {
-                let x = coord.x;
-                let y = coord.y;
-                let start_after = (duration / 4) * (idx as u64 / 5);
-                Fire::new(x, y, start_after, duration)
+            .map(|coord| {
+                let fire = Fire::new(coord.x, coord.y, Bomb::FIRE_DURATION);
+                ResultEvent::FireNew { fire }
             })
             .collect()
     }

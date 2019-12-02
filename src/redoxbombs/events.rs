@@ -83,8 +83,11 @@ pub enum ResultEvent {
     /// Include bomb to level and schedule it to explode.
     BombNew { bomb: Bomb },
 
-    /// Explode the bomb creating the corresponding fires.
-    BombExplode { id: usize, fires: Vec<Fire> },
+    /// Explode the bomb and remove it from the level.
+    BombExplode { id: usize },
+
+    /// Include fire to level and schedule it to put out.
+    FireNew { fire: Fire },
 
     /// Put out the fire.
     FirePutOut { id: usize },
