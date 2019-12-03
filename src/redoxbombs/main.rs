@@ -204,7 +204,12 @@ impl<R: Read, W: Write> Game<R, W> {
             | GameEvent::FirePutOut { id }
             | GameEvent::FireInit { id } => {
                 if let Some(fire) = self.level.fires.get_mut(id).unwrap_or(&mut None) {
-                    fire.update(game_event, &mut self.result_events);
+                    fire.update(
+                        &self.level.player,
+                        &self.level.enemies,
+                        game_event,
+                        &mut self.result_events,
+                    );
                 }
             }
             GameEvent::StairsCheckCollision => self.level.stairs.update(

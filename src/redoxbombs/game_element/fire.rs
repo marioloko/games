@@ -1,6 +1,8 @@
 use events::{GameEvent, ResultEvent};
 use game_element::Coordinates;
+use game_element::Enemy;
 use game_element::GameElement;
+use game_element::Player;
 use std::collections::VecDeque;
 
 /// A `Fire` object represents the explosion fire produced by a bomb.
@@ -30,7 +32,13 @@ impl Fire {
 
     /// Update the `Fire` state according to an input event and generate
     /// the right results events.
-    pub fn update(&self, event: GameEvent, results: &mut VecDeque<ResultEvent>) {
+    pub fn update(
+        &self,
+        player: &Player,
+        enemies: &[Option<Enemy>],
+        event: GameEvent,
+        results: &mut VecDeque<ResultEvent>,
+    ) {
         match event {
             GameEvent::FireInit { id } => {
                 // Add a fire extintion event to put out the fire after `duration`.
@@ -51,6 +59,13 @@ impl Fire {
                 // Notify that the game state has changed.
                 let updated_event = ResultEvent::GameUpdated;
                 results.push_back(updated_event);
+            }
+            GameEvent::FireCheckCollision { id }
+                if player.get_position() == self.get_position() =>
+            {
+                // Kill the player if burt by fire.
+                let player_died_event = ResultEvent::PlayerDied;
+                results.push_back(player_died_event);
             }
             GameEvent::FireCheckCollision { id } => {
                 // Recheck collision with other game elements.
