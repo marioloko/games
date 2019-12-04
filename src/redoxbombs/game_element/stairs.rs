@@ -2,7 +2,6 @@ use events::{GameEvent, ResultEvent};
 use game_element::Coordinates;
 use game_element::GameElement;
 use game_element::Player;
-use maze::Maze;
 use std::collections::VecDeque;
 
 /// A `Stairs` object represents an object used to
