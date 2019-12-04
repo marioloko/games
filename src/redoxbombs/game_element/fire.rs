@@ -70,7 +70,6 @@ impl Fire {
             GameEvent::FireCheckCollision { id } => {
                 // Kill enemy if collides with any.
                 let kill_enemy_events = self.create_kill_enemy_event(enemies);
-
                 results.extend(kill_enemy_events.into_iter());
 
                 // Recheck collision with other game elements.
