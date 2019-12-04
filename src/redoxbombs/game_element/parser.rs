@@ -1,4 +1,4 @@
-use game_element::{Bomb, Enemy, Player, Stairs};
+use game_element::{Fire, Bomb, Enemy, Player, Stairs};
 use std::collections::HashMap;
 
 /// A `GameElementsLoader` is a game elements parser. It holds the information
@@ -113,14 +113,14 @@ impl<'a> GameElementsLoader<'a> {
     /// literal. A `Bomb`definition consists on the name of the bomb followed by
     /// its x and y coordinates as integer.
     ///
-    /// Ex: `Enemy 1 2`, where `x = 1` and `y = 2`.
+    /// Ex: `Bomb 1 2`, where `x = 1` and `y = 2`.
     ///
     ///
     /// returns: 0 or more `Bomb` objects.
     ///
     /// panics:
-    /// - This method panics if any enemy `x` coordinate is not and integer.
-    /// - This method panics if any enemy `y` coordinate is not and integer.
+    /// - This method panics if any bomb `x` coordinate is not and integer.
+    /// - This method panics if any bomb `y` coordinate is not and integer.
     pub fn generate_bombs(&self) -> Vec<Bomb> {
         let bombs = self.game_elements.get(Bomb::NAME);
 
@@ -137,6 +137,41 @@ impl<'a> GameElementsLoader<'a> {
                 let y = extract_y_arg(args, Bomb::NAME);
 
                 Bomb::new(x, y)
+            })
+            .collect()
+    }
+
+    /// Generate `Vec<Fire>` from the information gathered from the config string
+    /// literal. A `Fire` definition consists on the name of the fire followed by
+    /// its x and y coordinates as integer and the duration also as integer.
+    ///
+    /// Ex: `Fire 1 2 200`, where `x = 1`,  `y = 2` and `duration = 200`.
+    ///
+    ///
+    /// returns: 0 or more `Fire` objects.
+    ///
+    /// panics:
+    /// - This method panics if any fire `x` coordinate is not and integer.
+    /// - This method panics if any fire `y` coordinate is not and integer.
+    /// - This method panics if any fire `duration` is not and integer.
+    pub fn generate_fires(&self) -> Vec<Fire> {
+        let fires = self.game_elements.get(Fire::NAME);
+
+        let fires = match fires {
+            None => return Vec::new(),
+            Some(fires) => fires,
+        };
+
+        fires
+            .iter()
+            .map(|args| {
+                let x = extract_x_arg(args, Fire::NAME);
+
+                let y = extract_y_arg(args, Fire::NAME);
+
+                let duration = extract_duration_arg(args, Fire::NAME) as u64;
+
+                Fire::new(x, y, duration)
             })
             .collect()
     }
@@ -169,6 +204,23 @@ impl<'a> GameElementsLoader<'a> {
     }
 }
 
+/// Extract the argument with index `$index` from the argument list `$args`. It also
+/// uses the `$game_element_name` and `$argument_name` to provide debuggin info.
+fn extract_arg(args: &[&str], index: usize, game_element_name: &str, argument_name: &str) -> usize {
+    args.get(index)
+        .expect(&format!(
+            "{argument_name} not found for {game_element_name}.",
+            argument_name = argument_name,
+            game_element_name = game_element_name,
+        ))
+        .parse()
+        .expect(&format!(
+            "{game_element_name} {argument_name} is not a valid integer.",
+            argument_name = argument_name,
+            game_element_name = game_element_name,
+        ))
+}
+
 /// Extract the `x` coordinate from the arguments to create the game element,
 /// defined by `game_element_name`.
 ///
@@ -177,16 +229,7 @@ impl<'a> GameElementsLoader<'a> {
 /// panics:
 /// - If `x` coordinate is not and integer.
 fn extract_x_arg(args: &[&str], game_element_name: &str) -> usize {
-    args.get(0)
-        .expect(&format!(
-            "X Coordinate not found for {}.",
-            game_element_name
-        ))
-        .parse()
-        .expect(&format!(
-            "{} X Coordinate is not a valid integer.",
-            game_element_name
-        ))
+    extract_arg(args, 0, game_element_name, "X Coordinate")
 }
 
 /// Extract the `y` coordinate from the arguments to create the game element,
@@ -197,14 +240,16 @@ fn extract_x_arg(args: &[&str], game_element_name: &str) -> usize {
 /// panics:
 /// - If `y` coordinate is not and integer.
 fn extract_y_arg(args: &[&str], game_element_name: &str) -> usize {
-    args.get(1)
-        .expect(&format!(
-            "Y Coordinate not found for {}.",
-            game_element_name
-        ))
-        .parse()
-        .expect(&format!(
-            "{} Y Coordinate is not a valid integer.",
-            game_element_name
-        ))
+    extract_arg(args, 1, game_element_name, "Y Coordinate")
+}
+
+/// Extract the `duration` from the arguments to create the game element,
+/// defined by `game_element_name`.
+///
+/// returns: The `duration` coordinate defined in `args`.
+///
+/// panics:
+/// - If `duration` is not and integer.
+fn extract_duration_arg(args: &[&str], game_element_name: &str) -> usize {
+    extract_arg(args, 2, game_element_name, "Duration")
 }
