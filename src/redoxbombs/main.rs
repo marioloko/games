@@ -18,7 +18,10 @@ use std::time::Duration;
 /// Milliseconds to sleep when paused to reduce the CPU usage
 /// due to busy waiting.
 const PAUSE_SLEEP_MILLIS: u64 = 300;
-const REFRESH_TIME: u64 = 50;
+
+/// Milliseconds to sleep between Game loop to reduce the CPU
+/// usage due to busy waiting.
+const LOOP_SLEEP_MILLIS: u64 = 50;
 
 /// The `GameMode` defines the state of the game.
 enum GameMode {
@@ -143,7 +146,7 @@ impl<R: Read, W: Write> Game<R, W> {
             self.handle_pause();
 
             // Avoid inmediate redrawing of the maze.
-            thread::sleep(Duration::from_millis(REFRESH_TIME));
+            thread::sleep(Duration::from_millis(LOOP_SLEEP_MILLIS));
 
             // If the game has been updated then render the game again.
             if self.updated {
@@ -158,17 +161,9 @@ impl<R: Read, W: Write> Game<R, W> {
     /// of the current level.
     fn handle_input_event(&mut self, input_event: InputEvent) {
         match input_event {
-            InputEvent::PlayerMove(_) => {
-                // Move player.
-                self.level
-                    .player
-                    .update(&self.level.maze, input_event, &mut self.result_events)
-            }
-            InputEvent::PlayerCreateBomb => {
-                // Put bomb at player position.
-                self.level
-                    .player
-                    .update(&self.level.maze, input_event, &mut self.result_events)
+            InputEvent::PlayerMove(_) | InputEvent::PlayerCreateBomb => {
+                // Forward event to the player.
+                self.handle_player_event(input_event);
             }
             InputEvent::GameQuit => {
                 // Exit Game.
@@ -191,37 +186,22 @@ impl<R: Read, W: Write> Game<R, W> {
             GameEvent::EnemyMove { id }
             | GameEvent::EnemyCheckCollision { id }
             | GameEvent::EnemyInit { id } => {
-                if let Some(enemy) = self.level.enemies.get_mut(id).unwrap_or(&mut None) {
-                    enemy.update(
-                        &self.level.player,
-                        &self.level.maze,
-                        game_event,
-                        &mut self.result_events,
-                    );
-                }
+                // Execute enemy event.
+                self.handle_enemy_event(game_event, id);
             }
             GameEvent::FireCheckCollision { id }
             | GameEvent::FirePutOut { id }
             | GameEvent::FireInit { id } => {
-                if let Some(fire) = self.level.fires.get_mut(id).unwrap_or(&mut None) {
-                    fire.update(
-                        &self.level.player,
-                        &self.level.enemies,
-                        game_event,
-                        &mut self.result_events,
-                    );
-                }
+                // Execute fire event.
+                self.handle_fire_event(game_event, id);
             }
-            GameEvent::StairsCheckCollision => self.level.stairs.update(
-                &self.level.player,
-                &self.level.maze,
-                game_event,
-                &mut self.result_events,
-            ),
+            GameEvent::StairsCheckCollision => {
+                // Execute stairs event.
+                self.handle_stairs_event(game_event);
+            }
             GameEvent::BombExplode { id } | GameEvent::BombInit { id } => {
-                if let Some(bomb) = self.level.bombs.get(id).unwrap_or(&None) {
-                    bomb.update(&self.level.maze, game_event, &mut self.result_events);
-                }
+                // Execute bomb event.
+                self.handle_bomb_event(game_event, id);
             }
         }
     }
@@ -302,6 +282,57 @@ impl<R: Read, W: Write> Game<R, W> {
             if let GameMode::Paused = self.game_mode {
                 thread::sleep(Duration::from_millis(PAUSE_SLEEP_MILLIS));
             }
+        }
+    }
+
+    /// It consumes a `InputEvent` sent to the `Player` and forwards to it.
+    fn handle_player_event(&mut self, event: InputEvent) {
+        self.level
+            .player
+            .update(&self.level.maze, event, &mut self.result_events);
+    }
+
+    /// It consumes a `GameEvent` sent to an enemy and forwards to the `Enemy`
+    /// with id `id`. The `id` represents the enemy position in the level vector.
+    fn handle_enemy_event(&mut self, event: GameEvent, id: usize) {
+        if let Some(enemy) = self.level.enemies.get_mut(id).unwrap_or(&mut None) {
+            enemy.update(
+                &self.level.player,
+                &self.level.maze,
+                event,
+                &mut self.result_events,
+            );
+        }
+    }
+
+    /// It consumes a `GameEvent` sent to the `Stairs` and forwards to them.
+    fn handle_stairs_event(&mut self, event: GameEvent) {
+        self.level.stairs.update(
+            &self.level.player,
+            &self.level.maze,
+            event,
+            &mut self.result_events,
+        );
+    }
+
+    /// It consumes a `GameEvent` sent to a bomb and forwards to the `Bomb`
+    /// with id `id`. The `id` represents the bomb position in the level vector.
+    fn handle_bomb_event(&mut self, event: GameEvent, id: usize) {
+        if let Some(bomb) = self.level.bombs.get(id).unwrap_or(&None) {
+            bomb.update(&self.level.maze, event, &mut self.result_events);
+        }
+    }
+
+    /// It consumes a `GameEvent` sent to a fire and forwards to the `Fire`
+    /// with id `id`. The `id` represents the fire position in the level vector.
+    fn handle_fire_event(&mut self, event: GameEvent, id: usize) {
+        if let Some(fire) = self.level.fires.get_mut(id).unwrap_or(&mut None) {
+            fire.update(
+                &self.level.player,
+                &self.level.enemies,
+                event,
+                &mut self.result_events,
+            );
         }
     }
 
