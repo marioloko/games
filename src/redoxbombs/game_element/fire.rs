@@ -69,17 +69,7 @@ impl Fire {
             }
             GameEvent::FireCheckCollision { id } => {
                 // Kill enemy if collides with any.
-                let kill_enemy_events: Vec<_> = enemies
-                    .iter()
-                    .enumerate()
-                    .filter(|(_, enemy)| {
-                        if let Some(enemy) = enemy {
-                            return enemy.get_position() == self.get_position();
-                        }
-                        false
-                    })
-                    .map(|(id, _)| ResultEvent::EnemyDelete { id })
-                    .collect();
+                let kill_enemy_events = self.create_kill_enemy_event(enemies);
 
                 results.extend(kill_enemy_events.into_iter());
 
@@ -98,6 +88,26 @@ impl Fire {
             }
             _ => (),
         }
+    }
+
+    /// Create a `EnemyDelete` event for every enemy who collides with the fire.
+    fn create_kill_enemy_event(&self, enemies: &[Option<Enemy>]) -> Vec<ResultEvent> {
+        enemies
+            .iter()
+            .enumerate()
+            .filter(|(_, enemy)| self.enemy_collides(enemy))
+            .map(|(id, _)| ResultEvent::EnemyDelete { id })
+            .collect()
+    }
+
+    /// Checks whether or not a given `Option<Enemy>` is in the same
+    /// cell as the fire.
+    fn enemy_collides(&self, enemy: &Option<Enemy>) -> bool {
+        if let Some(enemy) = enemy {
+            return enemy.get_position() == self.get_position();
+        }
+
+        false
     }
 }
 
