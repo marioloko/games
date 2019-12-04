@@ -56,7 +56,7 @@ impl Enemy {
                 };
                 results.push_back(collision_event);
             }
-            GameEvent::EnemyMove { id } => {
+            GameEvent::EnemyMove { .. } => {
                 // Move the enemy towards the player.
                 self.move_towards(player, maze);
 
@@ -71,14 +71,14 @@ impl Enemy {
                 let updated_event = ResultEvent::GameUpdated;
                 results.push_back(updated_event);
             }
-            GameEvent::EnemyCheckCollision { id }
+            GameEvent::EnemyCheckCollision { .. }
                 if self.get_position() == player.get_position() =>
             {
                 // If enemy collides with player then the player dies.
                 let result = ResultEvent::PlayerDied;
                 results.push_back(result);
             }
-            GameEvent::EnemyCheckCollision { id } => {
+            GameEvent::EnemyCheckCollision { .. } => {
                 // Ensure to recheck the collision again in the future.
                 let result = ResultEvent::GameSetEvent { event };
                 results.push_back(result);
