@@ -63,11 +63,26 @@ impl Fire {
             GameEvent::FireCheckCollision { id }
                 if player.get_position() == self.get_position() =>
             {
-                // Kill the player if burt by fire.
+                // Kill the player if burnt by fire.
                 let player_died_event = ResultEvent::PlayerDied;
                 results.push_back(player_died_event);
             }
             GameEvent::FireCheckCollision { id } => {
+                // Kill enemy if collides with any.
+                let kill_enemy_events: Vec<_> = enemies
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, enemy)| {
+                        if let Some(enemy) = enemy {
+                            return enemy.get_position() == self.get_position();
+                        }
+                        false
+                    })
+                    .map(|(id, _)| ResultEvent::EnemyDelete { id })
+                    .collect();
+
+                results.extend(kill_enemy_events.into_iter());
+
                 // Recheck collision with other game elements.
                 let collision_event = ResultEvent::GameSetEvent { event };
                 results.push_back(collision_event);

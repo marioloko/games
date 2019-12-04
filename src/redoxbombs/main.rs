@@ -278,7 +278,10 @@ impl<R: Read, W: Write> Game<R, W> {
                 // Discard the fire.
                 self.level.fires[id].take();
             }
-            ResultEvent::EnemyDelete { id } => unimplemented!(),
+            ResultEvent::EnemyDelete { id } => {
+                // Discard the enemy.
+                self.level.enemies[id].take();
+            }
         }
     }
 
