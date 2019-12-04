@@ -32,7 +32,9 @@ impl<W: Write> OutputController<W> {
 
     /// Render drawn elements.
     pub fn render(&mut self) {
-        self.output.flush();
+        self.output
+            .flush()
+            .expect("OutputController cannot flush the output buffer.");
     }
 
     /// Remove all the drawn elements.
@@ -47,7 +49,7 @@ impl<W: Write> OutputController<W> {
             style = style::Reset,
             cursor = cursor::Goto(1, 1),
         )
-        .expect("OutputController cannot clear output");
+        .expect("OutputController cannot clear output.");
     }
 
     /// Draw the maze using the output. (But it is not render on
@@ -100,7 +102,7 @@ impl<W: Write> OutputController<W> {
         .unwrap_or_else(|_| {
             panic!(
                 "OutputController Cannot draw game element: \
-                 {game_element}, at pos: ({x},{y})",
+                 {game_element}, at pos: ({x},{y}).",
                 game_element = representation,
                 x = x,
                 y = y
