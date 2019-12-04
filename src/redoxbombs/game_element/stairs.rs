@@ -32,7 +32,6 @@ impl Stairs {
     pub fn update(
         &mut self,
         player: &Player,
-        maze: &Maze,
         event: GameEvent,
         results: &mut VecDeque<ResultEvent>,
     ) {

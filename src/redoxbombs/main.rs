@@ -307,12 +307,9 @@ impl<R: Read, W: Write> Game<R, W> {
 
     /// It consumes a `GameEvent` sent to the `Stairs` and forwards to them.
     fn handle_stairs_event(&mut self, event: GameEvent) {
-        self.level.stairs.update(
-            &self.level.player,
-            &self.level.maze,
-            event,
-            &mut self.result_events,
-        );
+        self.level
+            .stairs
+            .update(&self.level.player, event, &mut self.result_events);
     }
 
     /// It consumes a `GameEvent` sent to a bomb and forwards to the `Bomb`
