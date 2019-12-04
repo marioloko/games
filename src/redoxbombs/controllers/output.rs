@@ -50,19 +50,6 @@ impl<W: Write> OutputController<W> {
         .expect("OutputController cannot clear output");
     }
 
-    /// Remove a game element.
-    ///
-    /// panics:
-    /// - If it is not possible to clear the screen.
-    pub fn clear_game_element(&mut self, game_element: &impl GameElement) {
-        let position = game_element.get_position();
-        let x = 1 + position.x as u16;
-        let y = 1 + position.y as u16;
-
-        write!(self.output, "{cursor} ", cursor = cursor::Goto(x, y),)
-            .expect("OutputController cannot clear game element.");
-    }
-
     /// Draw the maze using the output. (But it is not render on
     /// the screen until `render` is called).
     ///
@@ -79,14 +66,6 @@ impl<W: Write> OutputController<W> {
             hide = cursor::Hide
         )
         .expect("OutputController cannot draw the map.");
-    }
-
-    /// Draw every given game element. (But they are not render on
-    /// the screen until `render` is called).
-    pub fn draw_game_elements(&mut self, game_elements: &[impl GameElement]) {
-        for game_element in game_elements {
-            self.draw_game_element(game_element);
-        }
     }
 
     /// Draw every optional game element. (But they are not render on
