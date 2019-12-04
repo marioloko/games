@@ -18,7 +18,11 @@ impl Bomb {
 
     /// Character to represent an `Bomb` object in the `Maze`.
     const REPRESENTATION: char = 'o';
+
+    /// The time in milliseconds from the bomb creation to the bomb explosion.
     const TIME_TO_EXPLODE: u64 = 3_000;
+
+    /// The duration of the fire created by this bomb.
     const FIRE_DURATION: u64 = 200;
 
     /// Creates a new `Bomb` object given its coordinates.
@@ -62,10 +66,29 @@ impl Bomb {
         }
     }
 
-    /// Create fires in bomb cell and in every cell located 1 or 2
-    /// positions away from the bomb cell in the directions: up,
-    /// down, left, right.
+    /// Create FireNew events for every fire located from the current position
+    /// to 2 cells in the directions: up, down, left, right.
     fn set_fire(&self, maze: &Maze) -> VecDeque<ResultEvent> {
+        // Get the fire where to create the fires.
+        let fire_coordinates = self.compute_fire_coordinates(maze);
+
+        // Convert fire_coordinates to FireNew events.
+        fire_coordinates
+            .into_iter()
+            .map(|coord| {
+                let fire = Fire::new(coord.x, coord.y, Bomb::FIRE_DURATION);
+                ResultEvent::FireNew { fire }
+            })
+            .collect()
+    }
+
+    /// Compute the coordinates where to create the fires. The fires are created
+    /// in the bomb cell and 2 cells in the direction: up, down, left and right,
+    /// drawing a cross with center in the bomb cell.
+    ///
+    /// During the coordinates creation it is check if the cells are blocked
+    /// to avoid creating fires transpasing walls.
+    fn compute_fire_coordinates(&self, maze: &Maze) -> VecDeque<Coordinates> {
         // Create vector where to store the fire coordinates.
         let mut fire_coordinates = VecDeque::with_capacity(9);
 
@@ -105,14 +128,7 @@ impl Bomb {
             insert_next_coordinate_if_not_blocked!(right, Coordinates::right);
         }
 
-        // Convert fire_coordinates to FireNew events.
         fire_coordinates
-            .into_iter()
-            .map(|coord| {
-                let fire = Fire::new(coord.x, coord.y, Bomb::FIRE_DURATION);
-                ResultEvent::FireNew { fire }
-            })
-            .collect()
     }
 }
 
