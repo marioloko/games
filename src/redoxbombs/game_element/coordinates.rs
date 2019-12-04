@@ -13,7 +13,7 @@ pub struct Coordinates {
 impl Coordinates {
     /// Compute the eclidean distance between two `Coordinates`.
     /// Formula: sqrt( (x1 - x2)^2 + (y1 - y2)^2 )
-    pub fn euclidean_distance(&self, other: &Coordinates) -> f64 {
+    pub fn _euclidean_distance(&self, other: &Coordinates) -> f64 {
         let dx = abs_sub(self.x, other.x);
         let dy = abs_sub(self.y, other.y);
 
@@ -29,40 +29,6 @@ impl Coordinates {
         let dy = abs_sub(self.y, other.y);
 
         dx + dy
-    }
-
-    /// Get the next coordinate closer to `target` in both x and y
-    /// axis.
-    fn target_to(&self, target: &Coordinates) -> Coordinates {
-        let x = Coordinates::next_to(self.x, target.x);
-        let y = Coordinates::next_to(self.y, target.y);
-
-        Coordinates { x, y }
-    }
-
-    /// Get the next coordinate closer to `target` in the y axis.
-    fn target_x_to(&self, other: &Coordinates) -> Coordinates {
-        let x = Coordinates::next_to(self.x, other.x);
-
-        Coordinates { x, y: self.y }
-    }
-
-    /// Get the next coordinate closer to `target` in the y axis.
-    fn target_y_to(&self, target: &Coordinates) -> Coordinates {
-        let y = Coordinates::next_to(self.y, target.y);
-
-        Coordinates { x: self.x, y }
-    }
-
-    /// Compute the next coordinet to get closer to target.
-    fn next_to(current: usize, target: usize) -> usize {
-        if current > target {
-            current - 1
-        } else if current < target {
-            current + 1
-        } else {
-            current
-        }
     }
 
     /// Compute the `Coordinate` above the current one.
