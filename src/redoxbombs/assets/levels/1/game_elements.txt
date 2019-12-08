@@ -1,4 +1,4 @@
-# Name     x   y
+# Name     x   y  duration
 Player     1   1
 Enemy     19   1
 Enemy     11   7
@@ -6,3 +6,8 @@ Enemy      1   7
 Enemy      2   7
 Stairs    20   7
 Bomb       1   1
+Fire       5   5      3000
+Fire       6   6      3000
+Fire       4   4      3000
+Fire       4   6      3000
+Fire       6   4      3000
