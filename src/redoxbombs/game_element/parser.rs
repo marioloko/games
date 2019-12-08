@@ -1,4 +1,4 @@
-use game_element::{Fire, Bomb, Enemy, Player, Stairs};
+use game_element::{Bomb, Enemy, Fire, Player, Stairs};
 use std::collections::HashMap;
 
 /// A `GameElementsLoader` is a game elements parser. It holds the information
@@ -7,6 +7,94 @@ pub struct GameElementsLoader<'a> {
     /// Map linking an game_element name with its arguments to create a new
     /// object
     game_elements: HashMap<&'a str, Vec<Vec<&'a str>>>,
+}
+
+/// Generate a `GameElement` from the information gathered  by a `GameElementLoader`.
+/// A `GameElement` definition consists on the name `$type::NAME` followed by
+/// its `x` and `y` coordinates as integer.
+///
+/// Ex: `$type::NAME 1 2`, where `x = 1` and `y = 2`.
+///
+/// return: A single GameElement.
+///
+/// panics:
+/// - This method panics if no instance of the game element exists on the
+///   game element loader.
+/// - This method panics if `x` coordinate is not and integer.
+/// - This method panics if `y` coordinate is not and integer.
+macro_rules! generate_game_element {
+    ($game_element_loader:expr, $type:tt) => {{
+        let args = $game_element_loader
+            .game_elements
+            .get($type::NAME)
+            .expect(&format!(
+                "Expected 1 {} on the game elements config, found 0.",
+                $type::NAME
+            ))
+            .get(0)
+            .unwrap();
+
+        let x = extract_x_arg(args, $type::NAME);
+
+        let y = extract_y_arg(args, $type::NAME);
+
+        $type::new(x, y)
+    }};
+}
+
+/// Generate `Vec<GameElement>` from the information gathered from the config string
+/// literal. A `GameElement` definition consists on the name `$type::NAME` followed
+/// by its coordinates `x` and `y`, and any extra arguments.
+///
+/// There are two forms of this macro:
+///
+/// - Generate a `GameElement`s which only needs `x` and `y` to initialize.
+///
+/// Ex:
+/// ```
+/// let game_elements = generate_game_elements!(loader, Enemy);
+/// ```
+///
+/// - Generate a `GameElement`s which needs `x` and `y` coordinate, and other
+///   extra argument or further processing to initialize.
+///
+/// Ex:
+/// ```
+/// let game_elements = generate_game_elements!(loader, Fire, |args, x, y| {
+///    let duration = extract_duration_arg(&args, Fire::NAME);
+///
+///    Fire::new(x, y, duration)
+/// });
+/// ```
+///
+/// return: 0 or more `GameElement` objects.
+///
+/// panics:
+/// - This method panics if any bomb `x` coordinate is not and integer.
+/// - This method panics if any bomb `y` coordinate is not and integer.
+macro_rules! generate_game_elements {
+    ($game_element_loader:expr, $type:tt) => {{
+        generate_game_elements!($game_element_loader, $type, |_, x, y| { $type::new(x, y) })
+    }};
+    ($game_element_loader:expr, $type:tt, $init_function:expr) => {{
+        let game_elements = $game_element_loader.game_elements.get($type::NAME);
+
+        let game_elements = match game_elements {
+            None => return Vec::new(),
+            Some(game_elements) => game_elements,
+        };
+
+        game_elements
+            .iter()
+            .map(|args| {
+                let x = extract_x_arg(args, $type::NAME);
+
+                let y = extract_y_arg(args, $type::NAME);
+
+                $init_function(args, x, y)
+            })
+            .collect()
+    }};
 }
 
 impl<'a> GameElementsLoader<'a> {
@@ -63,18 +151,7 @@ impl<'a> GameElementsLoader<'a> {
     /// - This method panics if `x` coordinate is not and integer.
     /// - This method panics if `y` coordinate is not and integer.
     pub fn generate_player(&self) -> Player {
-        let args = self
-            .game_elements
-            .get(Player::NAME)
-            .expect("Expected 1 player on the game elements config, found 0.")
-            .get(0)
-            .unwrap();
-
-        let x = extract_x_arg(&args, Player::NAME);
-
-        let y = extract_y_arg(&args, Player::NAME);
-
-        Player::new(x, y)
+        generate_game_element!(self, Player)
     }
 
     /// Generate `Enemies` from the information gathered from the config string
@@ -90,23 +167,7 @@ impl<'a> GameElementsLoader<'a> {
     /// - This method panics if any enemy `x` coordinate is not and integer.
     /// - This method panics if any enemy `y` coordinate is not and integer.
     pub fn generate_enemies(&self) -> Vec<Enemy> {
-        let enemies = self.game_elements.get(Enemy::NAME);
-
-        let enemies = match enemies {
-            None => return Vec::new(),
-            Some(enemies) => enemies,
-        };
-
-        enemies
-            .iter()
-            .map(|args| {
-                let x = extract_x_arg(args, Enemy::NAME);
-
-                let y = extract_y_arg(args, Enemy::NAME);
-
-                Enemy::new(x, y)
-            })
-            .collect()
+        generate_game_elements!(self, Enemy)
     }
 
     /// Generate `Vec<Bomb>` from the information gathered from the config string
@@ -122,23 +183,7 @@ impl<'a> GameElementsLoader<'a> {
     /// - This method panics if any bomb `x` coordinate is not and integer.
     /// - This method panics if any bomb `y` coordinate is not and integer.
     pub fn generate_bombs(&self) -> Vec<Bomb> {
-        let bombs = self.game_elements.get(Bomb::NAME);
-
-        let bombs = match bombs {
-            None => return Vec::new(),
-            Some(bombs) => bombs,
-        };
-
-        bombs
-            .iter()
-            .map(|args| {
-                let x = extract_x_arg(args, Bomb::NAME);
-
-                let y = extract_y_arg(args, Bomb::NAME);
-
-                Bomb::new(x, y)
-            })
-            .collect()
+        generate_game_elements!(self, Bomb)
     }
 
     /// Generate `Vec<Fire>` from the information gathered from the config string
@@ -155,25 +200,11 @@ impl<'a> GameElementsLoader<'a> {
     /// - This method panics if any fire `y` coordinate is not and integer.
     /// - This method panics if any fire `duration` is not and integer.
     pub fn generate_fires(&self) -> Vec<Fire> {
-        let fires = self.game_elements.get(Fire::NAME);
+        generate_game_elements!(self, Fire, |args, x, y| {
+            let duration = extract_duration_arg(args, Fire::NAME) as u64;
 
-        let fires = match fires {
-            None => return Vec::new(),
-            Some(fires) => fires,
-        };
-
-        fires
-            .iter()
-            .map(|args| {
-                let x = extract_x_arg(args, Fire::NAME);
-
-                let y = extract_y_arg(args, Fire::NAME);
-
-                let duration = extract_duration_arg(args, Fire::NAME) as u64;
-
-                Fire::new(x, y, duration)
-            })
-            .collect()
+            Fire::new(x, y, duration)
+        })
     }
 
     /// Generate a `Stairs` object from the information gathered from
@@ -189,18 +220,7 @@ impl<'a> GameElementsLoader<'a> {
     /// - If `x` coordinate is not and integer.
     /// - If `y` coordinate is not and integer.
     pub fn generate_stairs(&self) -> Stairs {
-        let args = self
-            .game_elements
-            .get(Stairs::NAME)
-            .expect("Expected 1 stairs object on the game elements config, found 0.")
-            .get(0)
-            .unwrap();
-
-        let x = extract_x_arg(args, Stairs::NAME);
-
-        let y = extract_y_arg(args, Stairs::NAME);
-
-        Stairs::new(x, y)
+        generate_game_element!(self, Stairs)
     }
 }
 
