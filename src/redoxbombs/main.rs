@@ -402,6 +402,11 @@ fn generate_init_game_events(level: &Level) -> VecDeque<GameEvent> {
         game_events.push_back(GameEvent::BombInit { id });
     }
 
+    // Generate initialization game events for fire.
+    for (id, _) in level.fires.iter().enumerate() {
+        game_events.push_back(GameEvent::FireInit { id });
+    }
+
     // Generate an event for the stairs to start checking.
     game_events.push_back(GameEvent::StairsCheckCollision);
 
