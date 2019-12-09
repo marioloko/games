@@ -31,6 +31,9 @@ impl<W: Write> OutputController<W> {
     }
 
     /// Render drawn elements.
+    ///
+    /// panics:
+    /// - If not possible to flush the output.
     pub fn render(&mut self) {
         self.output
             .flush()
@@ -49,7 +52,17 @@ impl<W: Write> OutputController<W> {
             style = style::Reset,
             cursor = cursor::Goto(1, 1),
         )
-        .expect("OutputController cannot clear output.");
+        .expect("OutputController cannot generate clear output.");
+    }
+
+    /// Reset the output controller. Equivalent to `clear + cursor::Show`.
+    ///
+    /// panics:
+    /// - If it is not possible to reset the screen.
+    pub fn reset(&mut self) {
+        self.clear();
+        write!(self.output, "{show}", show = cursor::Show)
+            .expect("OutputController cannot generate reset output.");
     }
 
     /// Draw the maze using the output. (But it is not render on

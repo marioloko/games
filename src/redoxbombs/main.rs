@@ -414,9 +414,9 @@ fn generate_init_game_events(level: &Level) -> VecDeque<GameEvent> {
 }
 
 impl<R: Read, W: Write> Drop for Game<R, W> {
-    /// Clear the screen game elements on drop.
+    /// Clear the screen game elements and show cursor on drop.
     fn drop(&mut self) {
-        self.output_controller.clear();
+        self.output_controller.reset();
         self.output_controller.render();
     }
 }
