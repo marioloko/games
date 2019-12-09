@@ -40,6 +40,12 @@ pub struct Maze {
 }
 
 impl Maze {
+    pub fn break_tile(&mut self, x: usize, y: usize) {
+        let tile = self.get_mut_tile(x, y);
+
+        *tile = Tile::Empty;
+    }
+
     /// Check if certain position of the maze is blocked.
     ///
     /// x: The horizontal coordinate in the maze.
@@ -85,6 +91,13 @@ impl Maze {
     /// y: The vertical coordinate in the maze.
     fn get_tile(&self, x: usize, y: usize) -> &Tile {
         &self.tiles[x + self.width * y]
+    }
+
+    /// Return a mutable reference to the `Tile` at position `x` and `y`.
+    ///
+    /// x: The horizontal coordinate in the maze.
+    fn get_mut_tile(&mut self, x: usize, y: usize) -> &mut Tile {
+        &mut self.tiles[x + self.width * y]
     }
 }
 

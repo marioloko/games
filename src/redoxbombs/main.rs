@@ -234,6 +234,10 @@ impl<R: Read, W: Write> Game<R, W> {
                 // Set next game event to execute.
                 self.game_events.push_back(event);
             }
+            ResultEvent::MazeBreak { x, y } => {
+                // Break `Tile` at position `x` and `y`.
+                self.level.maze.break_tile(x, y);
+            }
             ResultEvent::BombNew { bomb } => {
                 // Add bomb to the level and get its id.
                 let id = self.level.add_bomb(bomb);
@@ -327,6 +331,7 @@ impl<R: Read, W: Write> Game<R, W> {
             fire.update(
                 &self.level.player,
                 &self.level.enemies,
+                &self.level.maze,
                 event,
                 &mut self.result_events,
             );

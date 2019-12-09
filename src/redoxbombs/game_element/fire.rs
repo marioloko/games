@@ -3,6 +3,7 @@ use game_element::Coordinates;
 use game_element::Enemy;
 use game_element::GameElement;
 use game_element::Player;
+use maze::Maze;
 use std::collections::VecDeque;
 
 /// A `Fire` object represents the explosion fire produced by a bomb.
@@ -36,6 +37,7 @@ impl Fire {
         &self,
         player: &Player,
         enemies: &[Option<Enemy>],
+        maze: &Maze,
         event: GameEvent,
         results: &mut VecDeque<ResultEvent>,
     ) {
@@ -55,6 +57,13 @@ impl Fire {
                     event: collision_event,
                 };
                 results.push_back(collision_event);
+
+                // If current `Tile` is breakable, then break it.
+                let pos = self.get_position();
+                if maze.is_blocked_breakable(pos.x, pos.y) {
+                    let break_tile_event = ResultEvent::MazeBreak { x: pos.x, y: pos.y };
+                    results.push_back(break_tile_event);
+                }
 
                 // Notify that the game state has changed.
                 let updated_event = ResultEvent::GameUpdated;

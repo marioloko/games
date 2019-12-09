@@ -74,6 +74,9 @@ pub enum ResultEvent {
     /// Convert `ResultEvent` to `GameEvent`.
     GameSetEvent { event: GameEvent },
 
+    /// Break the Maze Tile at position `x` and `y`.
+    MazeBreak { x: usize, y: usize },
+
     /// The player died so exit the game.
     PlayerDied,
 
