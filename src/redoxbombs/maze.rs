@@ -45,12 +45,33 @@ impl Maze {
     /// x: The horizontal coordinate in the maze.
     /// y: The vertical coordinate in the maze.
     pub fn is_blocked(&self, x: usize, y: usize) -> bool {
-        let tile = &self.tiles[x + self.width * y];
+        let tile = self.get_tile(x, y);
 
         match tile {
             Tile::Empty => false,
             Tile::Wall | Tile::BreakableWall => true,
         }
+    }
+
+    /// Check if certain position of the maze represents a breakable `Tile`.
+    ///
+    /// x: The horizontal coordinate in the maze.
+    /// y: The vertical coordinate in the maze.
+    pub fn is_breakable(&self, x: usize, y: usize) -> bool {
+        let tile = self.get_tile(x, y);
+
+        match tile {
+            Tile::BreakableWall => true,
+            Tile::Empty | Tile::Wall => false,
+        }
+    }
+
+    /// Return a reference to the `Tile` at position `x` and `y`.
+    ///
+    /// x: The horizontal coordinate in the maze.
+    /// y: The vertical coordinate in the maze.
+    fn get_tile(&self, x: usize, y: usize) -> &Tile {
+        &self.tiles[x + self.width * y]
     }
 }
 
