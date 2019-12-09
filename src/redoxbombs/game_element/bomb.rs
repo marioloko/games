@@ -100,13 +100,11 @@ impl Bomb {
         /// store it in the `fire_coordinates` vector.
         macro_rules! insert_next_coordinate_if_not_blocked {
             ($direction:ident, $next_coordinate_function:expr) => {{
-                // Compute next coordinate and update coordinate if not blocked,
-                // or it is blocked but breakable.
+                // Compute next coordinate and propagate coordinate if next
+                // coordinate is not a blocked unbreakable tile.
                 $direction = $direction
                     .map(|dir| $next_coordinate_function(&dir))
-                    .filter(|dir| {
-                        !maze.is_blocked(dir.x, dir.y) || maze.is_breakable(dir.x, dir.y)
-                    });
+                    .filter(|dir| !maze.is_blocked_unbreakable(dir.x, dir.y));
 
                 // If not blocked store coordinate in fire_coordinates.
                 if let Some(coordinate) = $direction {
@@ -114,7 +112,7 @@ impl Bomb {
                 }
 
                 // Stop propagation after hitting breakable tile.
-                $direction = $direction.filter(|dir| !maze.is_breakable(dir.x, dir.y));
+                $direction = $direction.filter(|dir| !maze.is_blocked_breakable(dir.x, dir.y));
             }};
         }
 

@@ -53,16 +53,29 @@ impl Maze {
         }
     }
 
-    /// Check if certain position of the maze represents a breakable `Tile`.
+    /// Check if certain position of the maze represents a blocked breakable `Tile`.
     ///
     /// x: The horizontal coordinate in the maze.
     /// y: The vertical coordinate in the maze.
-    pub fn is_breakable(&self, x: usize, y: usize) -> bool {
+    pub fn is_blocked_breakable(&self, x: usize, y: usize) -> bool {
         let tile = self.get_tile(x, y);
 
         match tile {
             Tile::BreakableWall => true,
             Tile::Empty | Tile::Wall => false,
+        }
+    }
+
+    /// Check if certain position of the maze represents a blocked unbreakable `Tile`.
+    ///
+    /// x: The horizontal coordinate in the maze.
+    /// y: The vertical coordinate in the maze.
+    pub fn is_blocked_unbreakable(&self, x: usize, y: usize) -> bool {
+        let tile = self.get_tile(x, y);
+
+        match tile {
+            Tile::Wall => true,
+            Tile::Empty | Tile::BreakableWall => false,
         }
     }
 
