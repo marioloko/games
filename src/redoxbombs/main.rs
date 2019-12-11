@@ -6,6 +6,7 @@ mod events;
 mod game_element;
 mod level;
 mod maze;
+mod utils;
 
 use controllers::{InputController, OutputController, TimeController};
 use events::{GameEvent, InputEvent, ResultEvent};
@@ -14,6 +15,7 @@ use std::collections::VecDeque;
 use std::io::{self, Read, Write};
 use std::thread;
 use std::time::Duration;
+use utils::InsertAtEmpty;
 
 /// Milliseconds to sleep when paused to reduce the CPU usage
 /// due to busy waiting.
@@ -244,7 +246,7 @@ impl<R: Read, W: Write> Game<R, W> {
             }
             ResultEvent::BombNew { bomb } => {
                 // Add bomb to the level and get its id.
-                let id = self.level.add_bomb(bomb);
+                let id = self.level.bombs.insert_at_empty(bomb);
 
                 // Initialize the bomb to explode and check collisions.
                 let init_event = GameEvent::BombInit { id };
@@ -256,7 +258,7 @@ impl<R: Read, W: Write> Game<R, W> {
             }
             ResultEvent::FireNew { fire } => {
                 // Add bomb to the level and get its id.
-                let id = self.level.add_fire(fire);
+                let id = self.level.fires.insert_at_empty(fire);
 
                 // Initialize the fire to put out and check collisions.
                 let init_event = GameEvent::FireInit { id };
