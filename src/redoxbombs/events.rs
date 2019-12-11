@@ -22,6 +22,9 @@ pub enum InputEvent {
 /// their elements to handle requests in a RoundRobin way.
 #[derive(Debug)]
 pub enum GameEvent {
+    /// Increment the number of bombs available for the player.
+    PlayerRecoverBomb,
+
     /// Initializes a new enemy creating the needed events.
     EnemyInit { id: usize },
 

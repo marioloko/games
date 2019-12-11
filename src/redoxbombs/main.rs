@@ -163,7 +163,7 @@ impl<R: Read, W: Write> Game<R, W> {
         match input_event {
             InputEvent::PlayerMove(_) | InputEvent::PlayerCreateBomb => {
                 // Forward event to the player.
-                self.handle_player_event(input_event);
+                self.handle_player_input_event(input_event);
             }
             InputEvent::GameQuit => {
                 // Exit Game.
@@ -183,6 +183,10 @@ impl<R: Read, W: Write> Game<R, W> {
     /// of the current level.
     fn handle_game_event(&mut self, game_event: GameEvent) {
         match game_event {
+            GameEvent::PlayerRecoverBomb => {
+                // Execute player event.
+                self.handle_player_event(game_event);
+            }
             GameEvent::EnemyMove { id }
             | GameEvent::EnemyCheckCollision { id }
             | GameEvent::EnemyInit { id } => {
@@ -290,10 +294,17 @@ impl<R: Read, W: Write> Game<R, W> {
     }
 
     /// It consumes a `InputEvent` sent to the `Player` and forwards to it.
-    fn handle_player_event(&mut self, event: InputEvent) {
+    fn handle_player_input_event(&mut self, event: InputEvent) {
         self.level
             .player
-            .update(&self.level.maze, event, &mut self.result_events);
+            .update_from_input_event(&self.level.maze, event, &mut self.result_events);
+    }
+
+    /// It consumes a `GameEvent` sent to the `Player` and forwards to it.
+    fn handle_player_event(&mut self, event: GameEvent) {
+        self.level
+            .player
+            .update(event);
     }
 
     /// It consumes a `GameEvent` sent to an enemy and forwards to the `Enemy`

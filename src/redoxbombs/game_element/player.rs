@@ -1,4 +1,4 @@
-use events::{Direction, InputEvent, ResultEvent};
+use events::{Direction, InputEvent, GameEvent, ResultEvent};
 use game_element::Bomb;
 use game_element::Coordinates;
 use game_element::GameElement;
@@ -10,6 +10,16 @@ use std::collections::VecDeque;
 pub struct Player {
     /// The `Coordinates` where this game element is located.
     position: Coordinates,
+
+    /// Maximum number of simultaneous `Bomb` allowed for the `Player`.
+    max_bombs: usize,
+
+    /// Number of simultaneos bombs that the `Player` can put at this moment.
+    bombs: usize,
+
+    /// Milliseconds for the `Player` to increment the number of available
+    /// `Bomb`s.
+    bomb_recovery_millis: u64,
 }
 
 impl Player {
@@ -19,16 +29,35 @@ impl Player {
     /// Character to represent an `Player` object in the `Maze`.
     const REPRESENTATION: char = '@';
 
+    /// Initial maximum number of player simultaneous bombs.
+    const INITIAL_MAX_BOMBS: usize = 3;
+
+    /// Initial time needed to increment the player number of bombs
+    /// in milliseconds.
+    const INITIAL_BOMB_RECOVERY_MILLIS: u64 = 4_000;
+
     /// Creates a new `Player` object given its coordinates.
     pub fn new(x: usize, y: usize) -> Self {
+        // Player is created at the given coordinates.
         let position = Coordinates { x, y };
 
-        Self { position }
+        // Set the maximum number of bombs.
+        let max_bombs = Self::INITIAL_MAX_BOMBS;
+
+        // At the begining the player has the maximum number
+        // of bombs allowed.
+        let bombs = max_bombs;
+
+        // Set the bomb recovery time
+        let bomb_recovery_millis = Self::INITIAL_BOMB_RECOVERY_MILLIS;
+
+        // Create Player.
+        Self { position, max_bombs, bombs, bomb_recovery_millis }
     }
 
-    /// Update the `Player` state according to an input event and generate
-    /// the right results events.
-    pub fn update(&mut self, maze: &Maze, event: InputEvent, results: &mut VecDeque<ResultEvent>) {
+    /// Update the `Player` state according to an `InputEvent` and generate
+    /// the right `ResultEvent`.
+    pub fn update_from_input_event(&mut self, maze: &Maze, event: InputEvent, results: &mut VecDeque<ResultEvent>) {
         match event {
             InputEvent::PlayerMove(dir) => {
                 // Move player in the input direction.
@@ -39,10 +68,37 @@ impl Player {
                 results.push_back(updated_event);
             }
             InputEvent::PlayerCreateBomb => {
-                // Put a bomb in the current coordinates.
-                let bomb = self.put_bomb();
-                let result = ResultEvent::BombNew { bomb };
-                results.push_back(result);
+                // Check if the user has bombs.
+                if self.bombs > 0 {
+                    // Put a bomb in the current position.
+                    let bomb = self.put_bomb();
+                    let result = ResultEvent::BombNew { bomb };
+                    results.push_back(result);
+
+                    // The player loses a bomb.
+                    self.bombs -= 1;
+
+                    // Schedule bomb to recover after the recover time.
+                    let bomb_recover_event = ResultEvent::GameScheduleEvent {
+                        millis: self.bomb_recovery_millis,
+                        event: GameEvent::PlayerRecoverBomb,
+                    };
+                    results.push_back(bomb_recover_event);
+                }
+            }
+            _ => (),
+        }
+    }
+
+    /// Update the `Player` state according to a game event.
+    pub fn update(&mut self, event: GameEvent) {
+        match event {
+            GameEvent::PlayerRecoverBomb => {
+                // Check if user has maximum number of bombs.
+                if self.bombs < self.max_bombs {
+                    // Recover one bomb.
+                    self.bombs += 1;
+                }
             }
             _ => (),
         }
