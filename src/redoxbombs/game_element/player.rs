@@ -1,7 +1,7 @@
-use events::{Direction, InputEvent, GameEvent, ResultEvent};
+use events::{Direction, GameEvent, InputEvent, ResultEvent};
 use game_element::Bomb;
 use game_element::Coordinates;
-use game_element::GameElement;
+use game_element::{AnyGameElementAt, GameElement};
 use maze::Maze;
 use std::collections::VecDeque;
 
@@ -52,16 +52,27 @@ impl Player {
         let bomb_recovery_millis = Self::INITIAL_BOMB_RECOVERY_MILLIS;
 
         // Create Player.
-        Self { position, max_bombs, bombs, bomb_recovery_millis }
+        Self {
+            position,
+            max_bombs,
+            bombs,
+            bomb_recovery_millis,
+        }
     }
 
     /// Update the `Player` state according to an `InputEvent` and generate
     /// the right `ResultEvent`.
-    pub fn update_from_input_event(&mut self, maze: &Maze, event: InputEvent, results: &mut VecDeque<ResultEvent>) {
+    pub fn update_from_input_event(
+        &mut self,
+        bombs: &[Option<Bomb>],
+        maze: &Maze,
+        event: InputEvent,
+        results: &mut VecDeque<ResultEvent>,
+    ) {
         match event {
             InputEvent::PlayerMove(dir) => {
                 // Move player in the input direction.
-                self.move_player(maze, dir);
+                self.move_player(maze, bombs, dir);
 
                 // Notify that the game state has changed.
                 let updated_event = ResultEvent::GameUpdated;
@@ -105,7 +116,7 @@ impl Player {
     }
 
     /// Move the player toward the given direction if the tile is not blocked.
-    fn move_player(&mut self, maze: &Maze, dir: Direction) {
+    fn move_player(&mut self, maze: &Maze, bombs: &[Option<Bomb>], dir: Direction) {
         // Compute next position to move.
         let next_position = match dir {
             Direction::Up => self.position.up(),
@@ -114,8 +125,11 @@ impl Player {
             Direction::Right => self.position.right(),
         };
 
+        // Check if the position is blocked by any bomb.
+        let blocked_by_bombs = bombs.any_game_element_at(&next_position);
+
         // Move to next position if not blocked.
-        if !maze.is_blocked(next_position.x, next_position.y) {
+        if !maze.is_blocked(next_position.x, next_position.y) && !blocked_by_bombs {
             self.position = next_position;
         }
     }

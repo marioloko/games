@@ -13,7 +13,7 @@ mod stairs;
 pub use self::coordinates::Coordinates;
 
 /// The trait for representing a `GameElement`.
-pub use self::game_element::GameElement;
+pub use self::game_element::{AnyGameElementAt, GameElement};
 
 /// The definition of a `Player`.
 pub use self::player::Player;

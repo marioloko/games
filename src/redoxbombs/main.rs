@@ -297,16 +297,17 @@ impl<R: Read, W: Write> Game<R, W> {
 
     /// It consumes a `InputEvent` sent to the `Player` and forwards to it.
     fn handle_player_input_event(&mut self, event: InputEvent) {
-        self.level
-            .player
-            .update_from_input_event(&self.level.maze, event, &mut self.result_events);
+        self.level.player.update_from_input_event(
+            &self.level.bombs,
+            &self.level.maze,
+            event,
+            &mut self.result_events,
+        );
     }
 
     /// It consumes a `GameEvent` sent to the `Player` and forwards to it.
     fn handle_player_event(&mut self, event: GameEvent) {
-        self.level
-            .player
-            .update(event);
+        self.level.player.update(event);
     }
 
     /// It consumes a `GameEvent` sent to an enemy and forwards to the `Enemy`
