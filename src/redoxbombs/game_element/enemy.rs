@@ -1,7 +1,8 @@
 use events::{GameEvent, ResultEvent};
+use game_element::Bomb;
 use game_element::Coordinates;
-use game_element::GameElement;
 use game_element::Player;
+use game_element::{AnyGameElementAt, GameElement};
 use maze::Maze;
 use rand::{self, Rng};
 use std::collections::VecDeque;
@@ -36,6 +37,7 @@ impl Enemy {
     pub fn update(
         &mut self,
         player: &Player,
+        bombs: &[Option<Bomb>],
         maze: &Maze,
         event: GameEvent,
         results: &mut VecDeque<ResultEvent>,
@@ -58,7 +60,7 @@ impl Enemy {
             }
             GameEvent::EnemyMove { .. } => {
                 // Move the enemy towards the player.
-                self.move_towards(player, maze);
+                self.move_towards(player, bombs, maze);
 
                 // Reschedule this event to be executed in the future after a delay.
                 let scheduling_event = ResultEvent::GameScheduleEvent {
@@ -88,7 +90,7 @@ impl Enemy {
     }
 
     /// Move the enemy towards the next non-blocked position closer to the player.
-    fn move_towards(&mut self, player: &Player, maze: &Maze) {
+    fn move_towards(&mut self, player: &Player, bombs: &[Option<Bomb>], maze: &Maze) {
         // Compute all the possible positions to move.
         let mut directions = vec![
             self.position.up(),
@@ -105,7 +107,8 @@ impl Enemy {
         let next_position = directions
             .into_iter()
             // Discard blocked positions.
-            .filter(|dir| !maze.is_blocked(dir.x, dir.y))
+            // NOTE: Complexity O(n x m) where n: #enemies and m: #bombs
+            .filter(|dir| !maze.is_blocked(dir.x, dir.y) && !bombs.any_game_element_at(dir))
             // Compute the manhattan distance to the player for every
             // non-blocked surrounded positions.
             .map(|dir| {

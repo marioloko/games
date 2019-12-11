@@ -316,6 +316,7 @@ impl<R: Read, W: Write> Game<R, W> {
         if let Some(enemy) = self.level.enemies.get_mut(id).unwrap_or(&mut None) {
             enemy.update(
                 &self.level.player,
+                &self.level.bombs,
                 &self.level.maze,
                 event,
                 &mut self.result_events,
